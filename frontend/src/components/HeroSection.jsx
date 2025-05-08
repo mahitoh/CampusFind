@@ -1,3 +1,4 @@
+// import demoUrl from "../assets/images/hero.png";
 const HeroSection = () => {
   return (
     <section className="hero-section text-center mt-32 flex flex-col">
@@ -19,17 +20,24 @@ const HeroSection = () => {
       <div className="mx-auto mt-5 flex gap-6">
         <a
           href="#get-started"
-          className="rounded-full border px-5 py-2 text-sm font-medium shodow-sm border-white bg-blue-500 text-white hover:ring-gray-200 hover:ring-2"
+          className="rounded-full px-6 py-3 text-sm font-medium shodow-sm bg-[#a402cc] text-white"
         >
           Get Started
         </a>
         <a
           href="#learn-more"
-          className="rounded-full border px-5 py-2 text-sm font-medium shodow-sm border-gray-200 bg-white text-blue-500 hover:ring-gray-300 hover:ring-2"
+          className="rounded-full px-5 py-2 text-sm font-medium shodow-sm  text-gray-800 hover:ring-gray-300"
         >
-          learn more
+          Learn More
         </a>
       </div>
+      {/* <div className="relative mt-10 flex items-center justify-center">
+        <img
+          src={demoUrl}
+          alt="Demo"
+          className="mx-auto max-h-[300px] sm:max-h-[500px] "
+        />
+      </div> */}
     </section>
   );
 };

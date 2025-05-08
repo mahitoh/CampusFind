@@ -1,2 +1,108 @@
-@tailwind utilities;
+/* @tailwind utilities; */
 /* Custom styles can be added below */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 220 25% 97%;
+    --foreground: 220 45% 15%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 220 45% 15%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 45% 15%;
+
+    --primary: 220 60% 50%;
+    --primary-foreground: 220 10% 98%;
+
+    --secondary: 220 15% 92%;
+    --secondary-foreground: 220 45% 15%;
+
+    --muted: 220 15% 92%;
+    --muted-foreground: 220 25% 40%;
+
+    --accent: 262 83% 58%;
+    --accent-foreground: 220 10% 98%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 220 20% 86%;
+    --input: 220 20% 86%;
+    --ring: 220 60% 50%;
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 222 47% 11%;
+    --foreground: 220 10% 98%;
+
+    --card: 222 45% 7%;
+    --card-foreground: 220 10% 98%;
+
+    --popover: 222 45% 7%;
+    --popover-foreground: 220 10% 98%;
+
+    --primary: 220 60% 50%;
+    --primary-foreground: 220 10% 98%;
+
+    --secondary: 222 30% 20%;
+    --secondary-foreground: 220 10% 98%;
+
+    --muted: 222 30% 20%;
+    --muted-foreground: 220 15% 65%;
+
+    --accent: 262 83% 58%;
+    --accent-foreground: 220 10% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 222 30% 20%;
+    --input: 222 30% 20%;
+    --ring: 220 60% 50%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased selection:bg-accent/20 selection:text-accent;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+@layer utilities {
+  .glass {
+    @apply bg-white/70 dark:bg-black/50 backdrop-blur-md border border-white/20 dark:border-white/10 shadow-lg;
+  }
+
+  .glass-darker {
+    @apply bg-white/80 dark:bg-black/70 backdrop-blur-lg border border-white/30 dark:border-white/10 shadow-xl;
+  }
+
+  .glass-card {
+    @apply bg-white/90 dark:bg-black/60 backdrop-blur-md border border-white/30 dark:border-white/10 shadow-md hover:shadow-lg transition-all duration-300;
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+}

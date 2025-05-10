@@ -1,8 +1,8 @@
 /* @tailwind utilities; */
 /* Custom styles can be added below */
 
-@tailwind base;
-@tailwind components;
+/*@tailwind base;*/
+/*@tailwind components;*/
 @tailwind utilities;
 
 @layer base {

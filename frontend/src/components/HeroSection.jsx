@@ -11,7 +11,7 @@ const HeroSection = () => {
           We'er Here to Help!
         </span>
       </h1>
-      <h2 className="mt-5 text-gray-600 sm:text-xl">
+      <h2 className="mt-5 text-gray-600 sm:text-xl font-medium">
         Easily find and report lost items on campus through our platform.
         <br />
         CampusFind is a platform that connects students to help them find their
@@ -20,15 +20,15 @@ const HeroSection = () => {
       <div className="mx-auto mt-5 flex gap-6">
         <a
           href="#get-started"
-          className="rounded-full px-6 py-3 text-sm font-medium shodow-sm bg-[#a402cc] text-white"
+          className="rounded-lg px-6 py-3 text-sm font-medium shodow-sm bg-[#a402cc] text-white hover:ring-gray-200 hover:ring-2"
         >
           Get Started
         </a>
         <a
           href="#learn-more"
-          className="rounded-full px-5 py-2 text-sm font-medium shodow-sm  text-gray-800 hover:ring-gray-300"
+          className="rounded-lg px-6 py-3 text-sm font-medium bg-white shodow-sm border-gray-200 text-gray-800 hover:ring-gray-300 hover:ring-2"
         >
-          Learn More
+          learn more
         </a>
       </div>
       {/* <div className="relative mt-10 flex items-center justify-center">

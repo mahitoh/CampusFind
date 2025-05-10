@@ -44,7 +44,9 @@ const NavBar = () => {
               <li>
                 <a
                   href="/"
-                  className="font-medium hover:text-accent transition-colors"
+                  className={`${
+                    isScrolled ? "text-gray-800" : "text-white"
+                  } font-medium hover:text-accent transition-colors`}
                 >
                   Home
                 </a>
@@ -52,7 +54,9 @@ const NavBar = () => {
               <li>
                 <a
                   href=""
-                  className="font-medium hover:text-accent transition-colors"
+                  className={`${
+                    isScrolled ? "text-gray-800" : "text-white"
+                  } font-medium hover:text-accent transition-colors`}
                 >
                   About Us
                 </a>
@@ -60,7 +64,9 @@ const NavBar = () => {
               <li>
                 <a
                   href=""
-                  className="font-medium hover:text-accent transition-colors"
+                  className={`${
+                    isScrolled ? "text-gray-800" : "text-white"
+                  } font-medium hover:text-accent transition-colors`}
                 >
                   Contact
                 </a>
@@ -68,10 +74,10 @@ const NavBar = () => {
             </ul>
           </nav>
           <div>
-            {/* <a className="px-4 py-2 rounded-lg bg-accent text-white font-medium hover:bg-accent/90 transition-colors">
+            {/* <a className="font-mono bg-[#a402cc] px-4 py-2 rounded-md mr-2 text-white cursor-pointer">
               Login
             </a> */}
-            <a className=" font-medium p-2 bg-[#a402cc] hover:[#a402cc]/90 px-4 py-2 rounded-lg ml-2 text-white transition-colors hover:cursor-pointer ">
+            <a className="font-medium  bg-[#a402cc] px-4 py-2 rounded-lg bg-accent ml-2 text-white cursor-pointer hover:bg-accent/90 transition-colors">
               Sign In
             </a>
           </div>

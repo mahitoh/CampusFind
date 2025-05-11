@@ -1,4 +1,5 @@
-// import demoUrl from "../assets/images/hero.png";
+import SearchBar from "./SearchBar";
+
 const HeroSection = () => {
   return (
     <section className="hero-section text-center mt-32 flex flex-col">
@@ -17,27 +18,30 @@ const HeroSection = () => {
         CampusFind is a platform that connects students to help them find their
         lost items on campus.
       </h2>
-      <div className="mx-auto mt-5 flex gap-6">
+
+      {/* Search Bar */}
+      <div className="w-full max-w-lg mx-auto mt-8 mb-6">
+        <SearchBar
+          placeholder="Search for lost items..."
+          onSearch={(query) => console.log("Searching for:", query)}
+        />
+      </div>
+
+      <div className="mx-auto flex gap-4">
         <a
           href="#get-started"
-          className="rounded-lg px-6 py-3 text-sm font-medium shodow-sm bg-[#a402cc] text-white hover:ring-gray-200 hover:ring-2"
+          className="rounded-full px-9 py-3 text-sm font-medium shodow-sm bg-[#a402cc] text-white"
         >
           Get Started
         </a>
         <a
           href="#learn-more"
-          className="rounded-lg px-6 py-3 text-sm font-medium bg-white shodow-sm border-gray-200 text-gray-800 hover:ring-gray-300 hover:ring-2"
+          className="rounded-full px-9 py-3 text-sm font-medium shadow-sm text-gray-800  bg-white
+"
         >
-          learn more
+          Learn More
         </a>
       </div>
-      {/* <div className="relative mt-10 flex items-center justify-center">
-        <img
-          src={demoUrl}
-          alt="Demo"
-          className="mx-auto max-h-[300px] sm:max-h-[500px] "
-        />
-      </div> */}
     </section>
   );
 };

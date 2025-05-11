@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
 import "./App.css";
-import NavBar from "./components/Navbar";
+import NavBar from "./components/NavBar";
 import HeroSection from "./components/HeroSection";
+import LostItemsGrid from "./components/LostItemsGrid";
+import Footer from "./components/Footer";
 import bg1 from "./assets/images/bg.jpg";
 import bg2 from "./assets/images/download.jpg";
 import bg3 from "./assets/images/download (1).jpg";
@@ -17,7 +19,7 @@ function App() {
     }, 5000); // Change image every 5 seconds
 
     return () => clearInterval(interval);
-  }, []);
+  }, [images.length]);
 
   return (
     <div className="min-h-screen">
@@ -42,6 +44,13 @@ function App() {
         <NavBar />
         <div className="container mx-auto">
           <HeroSection />
+        </div>
+        <div className="bg-white relative z-10 mt-12">
+          <LostItemsGrid
+            title="Recently Reported Items"
+            subtitle="Browse through recently reported lost and found items on campus"
+          />
+          <Footer />
         </div>
       </div>
     </div>

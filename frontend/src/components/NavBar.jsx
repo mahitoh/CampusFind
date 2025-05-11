@@ -74,10 +74,10 @@ const NavBar = () => {
             </ul>
           </nav>
           <div>
-            {/* <a className="font-mono bg-[#a402cc] px-4 py-2 rounded-md mr-2 text-white cursor-pointer">
-              Login
-            </a> */}
-            <a className="font-medium  bg-[#a402cc] px-4 py-2 rounded-lg bg-accent ml-2 text-white cursor-pointer hover:bg-accent/90 transition-colors">
+            <a className="font-medium bg-[#a402cc] px-4 py-2 rounded-lg mr-2 text-white cursor-pointer   hover:bg-accent/90 active:opacity-70 transition-all">
+              Sign Up
+            </a>
+            <a className="font-medium bg-[#a402cc] px-4 py-2 rounded-lg ml-2 text-white cursor-pointer  hover:bg-accent/90 active:opacity-70 transition-all">
               Sign In
             </a>
           </div>

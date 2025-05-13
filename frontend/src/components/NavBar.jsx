@@ -30,7 +30,7 @@ const NavBar = () => {
 
   return (
     <div
-      className={`fixed inset-x-0 top-0 w-full z-30 transition-all duration-300 ${
+      className={`fixed inset-x-0 top-0 w-full z-30 transition-all duration-500 ${
         isScrolled ? "bg-white shadow-md" : "bg-transparent"
       }`}
     >

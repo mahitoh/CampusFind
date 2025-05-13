@@ -1,59 +1,48 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
+import { Routes, Route } from "react-router-dom";
 import "./App.css";
 import NavBar from "./components/NavBar";
 import HeroSection from "./components/HeroSection";
-import LostItemsGrid from "./components/LostItemsGrid";
 import Footer from "./components/Footer";
 import bg1 from "./assets/images/bg.jpg";
 import bg2 from "./assets/images/download.jpg";
-import bg3 from "./assets/images/download (1).jpg";
+import bg3 from "./assets/images/download1.jpg";
 import bg4 from "./assets/images/images.jpg";
+import FeaturedItems from "./components/FeaturedItems";
+import Testimonials from "./components/Testimonials";
+import SignUp from "./pages/SignUp";
+import Slider from "./components/Slider";
 
 function App() {
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const images = [bg1, bg2, bg3, bg4];
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentImageIndex((prevIndex) => (prevIndex + 1) % images.length);
-    }, 5000); // Change image every 5 seconds
-
-    return () => clearInterval(interval);
-  }, [images.length]);
-
-  return (
+  const HomePage = () => (
     <div className="min-h-screen">
-      {/* Background Slideshow */}
-      <div className="absolute inset-0 w-full h-full">
-        {images.map((image, index) => (
-          <img
-            key={index}
-            src={image}
-            alt={`background ${index + 1}`}
-            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${
-              index === currentImageIndex ? "opacity-15" : "opacity-0"
-            }`}
-          />
-        ))}
-        {/* Semi-transparent overlay */}
-        <div className="absolute inset-0 bg-black/30"></div>
-      </div>
-
+      {" "}
+      <NavBar />
+      {/* Background Slideshow - only for hero section */}
+      <Slider images={images} />
       {/* Content */}
       <div className="relative z-20">
-        <NavBar />
         <div className="container mx-auto">
           <HeroSection />
         </div>
-        <div className="bg-white relative z-10 mt-12">
-          <LostItemsGrid
-            title="Recently Reported Items"
-            subtitle="Browse through recently reported lost and found items on campus"
-          />
+        <div className="bg-white relative z-10">
+          <FeaturedItems />
+          <Testimonials />
           <Footer />
         </div>
       </div>
     </div>
+  );
+
+  return (
+    <>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/signup" element={<SignUp />} />
+      </Routes>
+    </>
   );
 }
 

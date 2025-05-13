@@ -30,7 +30,7 @@ const NavBar = () => {
 
   return (
     <div
-      className={`fixed inset-x-0 top-0 w-full z-30 transition-all duration-300 ${
+      className={`fixed inset-x-0 top-0 w-full z-30 transition-all duration-500 ${
         isScrolled ? "bg-white shadow-md" : "bg-transparent"
       }`}
     >
@@ -78,7 +78,7 @@ const NavBar = () => {
               Sign Up
             </a>
             <a className="font-medium bg-[#a402cc] px-4 py-2 rounded-lg ml-2 text-white cursor-pointer  hover:bg-accent/90 active:opacity-70 transition-all">
-              Sign In
+              Login
             </a>
           </div>
         </div>

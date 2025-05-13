@@ -2,11 +2,10 @@ import React, { useState, useEffect } from "react";
 import "./App.css";
 import NavBar from "./components/NavBar";
 import HeroSection from "./components/HeroSection";
-import LostItemsGrid from "./components/LostItemsGrid";
 import Footer from "./components/Footer";
 import bg1 from "./assets/images/bg.jpg";
 import bg2 from "./assets/images/download.jpg";
-import bg3 from "./assets/images/download (1).jpg";
+import bg3 from "./assets/images/download1.jpg";
 import bg4 from "./assets/images/images.jpg";
 
 function App() {
@@ -46,10 +45,6 @@ function App() {
           <HeroSection />
         </div>
         <div className="bg-white relative z-10 mt-12">
-          <LostItemsGrid
-            title="Recently Reported Items"
-            subtitle="Browse through recently reported lost and found items on campus"
-          />
           <Footer />
         </div>
       </div>

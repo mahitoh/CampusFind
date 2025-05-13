@@ -78,7 +78,7 @@ const NavBar = () => {
               Sign Up
             </a>
             <a className="font-medium bg-[#a402cc] px-4 py-2 rounded-lg ml-2 text-white cursor-pointer  hover:bg-accent/90 active:opacity-70 transition-all">
-              Sign In
+              Login
             </a>
           </div>
         </div>

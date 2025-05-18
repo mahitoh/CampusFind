@@ -1,6 +1,6 @@
 import logoUrl from "../assets/icons/logo1.png";
 import { useState, useEffect } from "react";
-// import {useScroll} from ""
+import { Link } from "react-router-dom";
 
 const NavBar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -72,14 +72,20 @@ const NavBar = () => {
                 </a>
               </li>
             </ul>
-          </nav>
+          </nav>{" "}
           <div>
-            <a className="font-medium bg-[#a402cc] px-4 py-2 rounded-lg mr-2 text-white cursor-pointer   hover:bg-accent/90 active:opacity-70 transition-all">
+            <Link
+              to="/signup"
+              className="font-medium bg-[#a402cc] px-4 py-2 rounded-lg mr-2 text-white cursor-pointer hover:bg-accent/90 active:opacity-70 transition-all"
+            >
               Sign Up
-            </a>
-            <a className="font-medium bg-[#a402cc] px-4 py-2 rounded-lg ml-2 text-white cursor-pointer  hover:bg-accent/90 active:opacity-70 transition-all">
+            </Link>
+            <Link
+              to="/login"
+              className="font-medium bg-[#a402cc] px-4 py-2 rounded-lg ml-2 text-white cursor-pointer hover:bg-accent/90 active:opacity-70 transition-all"
+            >
               Login
-            </a>
+            </Link>
           </div>
         </div>
       </div>

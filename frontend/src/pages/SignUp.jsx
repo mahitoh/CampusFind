@@ -7,8 +7,8 @@ import {
   FaTwitter,
 } from "react-icons/fa";
 
-const SignUp = () => {
-  const [isRegister, setIsRegister] = useState(false);
+const SignUp = ({ isLoginMode = false }) => {
+  const [isRegister, setIsRegister] = useState(!isLoginMode);
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-[#098dc1] via-[#098dc1] to-[#f417de]">

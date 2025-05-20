@@ -4,6 +4,10 @@ import { BrowserRouter } from "react-router-dom";
 import "./index.css";
 import App from "./App.jsx";
 
+/**
+ * Main application entry point
+ * Renders the App component inside the necessary providers
+ */
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <BrowserRouter>

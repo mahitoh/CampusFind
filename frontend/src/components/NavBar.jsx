@@ -1,9 +1,12 @@
 import logoUrl from "../assets/icons/logo1.png";
 import { useState, useEffect } from "react";
-// import {useScroll} from ""
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContextNew";
 
 const NavBar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
+  const { isAuthenticated, signOut } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -72,14 +75,42 @@ const NavBar = () => {
                 </a>
               </li>
             </ul>
-          </nav>
+          </nav>{" "}
           <div>
-            <a className="font-medium bg-[#a402cc] px-4 py-2 rounded-lg mr-2 text-white cursor-pointer   hover:bg-accent/90 active:opacity-70 transition-all">
-              Sign Up
-            </a>
-            <a className="font-medium bg-[#a402cc] px-4 py-2 rounded-lg ml-2 text-white cursor-pointer  hover:bg-accent/90 active:opacity-70 transition-all">
-              Login
-            </a>
+            {isAuthenticated ? (
+              <>
+                <Link
+                  to="/dashboard"
+                  className="font-medium bg-[#098dc1] px-4 py-2 rounded-lg mr-2 text-white cursor-pointer hover:bg-accent/90 active:opacity-70 transition-all"
+                >
+                  Dashboard
+                </Link>
+                <button
+                  onClick={() => {
+                    signOut();
+                    navigate("/");
+                  }}
+                  className="font-medium bg-red-500 px-4 py-2 rounded-lg ml-2 text-white cursor-pointer hover:bg-red-600 active:opacity-70 transition-all"
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  to="/signup"
+                  className="font-medium bg-[#a402cc] px-4 py-2 rounded-lg mr-2 text-white cursor-pointer hover:bg-accent/90 active:opacity-70 transition-all"
+                >
+                  Sign Up
+                </Link>
+                <Link
+                  to="/login"
+                  className="font-medium bg-[#a402cc] px-4 py-2 rounded-lg ml-2 text-white cursor-pointer hover:bg-accent/90 active:opacity-70 transition-all"
+                >
+                  Login
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </div>

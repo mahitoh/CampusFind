@@ -10,6 +10,7 @@ CampusFind is a comprehensive web-based solution designed specifically for unive
 
 ### For Users
 
+- **User Authentication**: Create an account and securely login to access personalized features
 - **Easy Item Reporting**: Submit lost items with detailed descriptions, photos, and location information
 - **Smart Search**: Advanced search functionality with filters for item type, location, date, and status
 - **Real-time Notifications**: Get instant updates when your lost item is found or when someone claims your found item

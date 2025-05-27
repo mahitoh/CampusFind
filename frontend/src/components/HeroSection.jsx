@@ -1,4 +1,5 @@
 import SearchBar from "./SearchBar";
+import { Link } from "react-router-dom";
 
 const HeroSection = () => {
   return (
@@ -16,22 +17,20 @@ const HeroSection = () => {
         CampusFind is a platform that connects students to help them find their
         lost items on campus.
       </h2>
-
       {/* Search Bar */}
       <div className="w-full max-w-lg mx-auto mt-8 mb-6">
         <SearchBar
           placeholder="Search for lost items..."
           onSearch={(query) => console.log("Searching for:", query)}
         />
-      </div>
-
+      </div>{" "}
       <div className="mx-auto flex gap-4 mb-4">
-        <a
-          href="#get-started"
+        <Link
+          to="/signup"
           className="rounded-full px-9 py-3 text-sm font-medium shadow-sm bg-[#a402cc] text-white hover:bg-opacity-90"
         >
           Get Started
-        </a>
+        </Link>
         <a
           href="#testimonials"
           className="rounded-full px-9 py-3 text-sm font-medium shadow-sm text-gray-800 bg-white hover:bg-gray-50"
@@ -39,7 +38,6 @@ const HeroSection = () => {
           Learn More
         </a>
       </div>
-
       {/* Scroll down indicator */}
       <div className="absolute bottom-10 animate-bounce">
         <svg
@@ -57,7 +55,6 @@ const HeroSection = () => {
           <path d="M12 5v14M19 12l-7 7-7-7" />
         </svg>
       </div>
-
       {/* Scroll indicator with smooth scrolling script */}
       <div className="absolute bottom-8 left-0 right-0 flex justify-center animate-bounce">
         <a

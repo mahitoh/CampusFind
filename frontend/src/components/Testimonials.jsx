@@ -36,7 +36,7 @@ const Testimonials = () => {
     <section className="pt-0 pb-16 bg-white" id="testimonials">
       {/* Statistics */}
       <div className="bg-gradient-to-r from-indigo-500 to-purple-600 p-6 text-white shadow-xl mb-12">
-        <div className="grid grid-cols-3 md:grid-cols-3 gap-8 text-center">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
           {stats.map((stat, index) => (
             <div key={index}>
               <div className="text-4xl font-bold mb-2">{stat.value}</div>

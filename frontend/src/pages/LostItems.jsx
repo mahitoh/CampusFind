@@ -208,12 +208,11 @@ const LostItems = () => {
             <span className="text-sm font-medium">Log Out</span>
           </Link>
         </div>
-      </div>
-
+      </div>{" "}
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1">
         {/* Main Content */}
-        <main className="flex-1 p-6 overflow-y-auto">
+        <main className="p-6 overflow-y-auto">
           <div className="max-w-7xl mx-auto">
             {" "}
             {/* Page Header */}
@@ -446,14 +445,14 @@ const LostItems = () => {
             <div
               className={`grid ${
                 displayMode === "Grid"
-                  ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+                  ? "grid-cols-1 sm:grid-cols-1 md:grid-cols-3 gap-6"
                   : "grid-cols-1 gap-4"
               }`}
             >
               {filteredItems.map((item) => (
                 <div
                   key={item.id}
-                  className="bg-white rounded-lg overflow-hidden shadow-sm flex flex-col"
+                  className="bg-white rounded-lg overflow-hidden shadow-sm flex flex-col relative"
                 >
                   {/* Status Badge */}
                   <div className="absolute top-2 right-2 z-10">
@@ -466,15 +465,13 @@ const LostItems = () => {
                     >
                       {item.status}
                     </span>
-                  </div>
-
+                  </div>{" "}
                   {/* Item Image Placeholder */}
-                  <div className="h-48 bg-gray-200 flex items-center justify-center">
+                  <div className="h-48 bg-gray-200 flex items-center justify-center w-full">
                     <span className="text-gray-400">Item Image</span>
-                  </div>
-
+                  </div>{" "}
                   {/* Item Details */}
-                  <div className="p-4 bg-black text-white flex-grow flex flex-col">
+                  <div className="p-4 bg-black text-white flex-grow flex flex-col w-full">
                     <h3 className="text-lg font-medium mb-1">{item.name}</h3>
 
                     <div className="flex items-center mt-1.5 text-gray-400">
@@ -505,7 +502,7 @@ const LostItems = () => {
             </div>
             {/* Empty State */}
             {filteredItems.length === 0 && (
-              <div className="text-center py-16 bg-white rounded-lg shadow-sm border border-gray-200">
+              <div className="text-center py-16 bg-white rounded-lg shadow-sm border border-gray-200 w-full">
                 <MagnifyingGlassIcon className="h-12 w-12 text-gray-400 mx-auto" />
                 <h3 className="mt-2 text-lg font-medium text-gray-900">
                   No items found

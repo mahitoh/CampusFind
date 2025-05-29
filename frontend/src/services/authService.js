@@ -33,10 +33,12 @@ export const signIn = async (credentials) => {
       const userData = {
         token: response.token,
         ...response.user,
-      };
+      }; // Save user data to both localStorage and sessionStorage
+      const userDataString = JSON.stringify(userData);
+      localStorage.setItem("user", userDataString);
+      sessionStorage.setItem("userSession", userDataString);
 
-      // Save user data to localStorage
-      localStorage.setItem("user", JSON.stringify(userData));
+      console.log("Authentication successful: User data saved to storage");
       return { success: true, data: userData };
     } else {
       console.error("Login API returned non-success:", response);
@@ -122,15 +124,27 @@ export const signUp = async (userData) => {
  */
 export const signOut = () => {
   localStorage.removeItem("user");
+  sessionStorage.removeItem("userSession");
 };
 
 /**
- * Get the current authenticated user from localStorage
+ * Get the current authenticated user from storage
+ * Checks both localStorage (for persistent login) and sessionStorage (for current session)
  * @returns {Object|null} - User object or null if not authenticated
  */
 export const getCurrentUser = () => {
+  // Try localStorage first
   const userData = localStorage.getItem("user");
-  return userData ? JSON.parse(userData) : null;
+
+  if (userData) {
+    // Also ensure the session is maintained
+    sessionStorage.setItem("userSession", userData);
+    return JSON.parse(userData);
+  }
+
+  // Fall back to sessionStorage (useful for page refreshes)
+  const sessionData = sessionStorage.getItem("userSession");
+  return sessionData ? JSON.parse(sessionData) : null;
 };
 
 /**
@@ -138,7 +152,8 @@ export const getCurrentUser = () => {
  * @returns {boolean} - True if user is authenticated
  */
 export const isAuthenticated = () => {
-  return !!getCurrentUser();
+  const user = getCurrentUser();
+  return !!user && !!user.token;
 };
 
 /**

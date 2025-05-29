@@ -1,4 +1,6 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
+import * as itemsService from "../services/itemsService";
+import { formatImageUrl } from "../services/apiClient";
 
 // Create a context for storing and sharing lost items data
 const ItemsContext = createContext();
@@ -10,8 +12,9 @@ export const useItems = () => useContext(ItemsContext);
 export const ItemsProvider = ({ children }) => {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Initial items data (would typically come from an API)
+  // Initial items data - for fallback if API fails
   const initialItems = [
     {
       id: 1,
@@ -77,88 +80,247 @@ export const ItemsProvider = ({ children }) => {
       category: "Books/Notes",
     },
   ];
-
   useEffect(() => {
-    // Load initial items (simulating API call)
-    setTimeout(() => {
-      setItems(initialItems);
-      setLoading(false);
-    }, 500);
+    // Fetch items from the API
+    const fetchItems = async () => {
+      try {
+        setLoading(true);
+        console.log("ItemsContext: Fetching items from API...");
 
-    // In a real app, you would fetch items from your API:
-    // const fetchItems = async () => {
-    //   try {
-    //     const response = await fetch('/api/items');
-    //     const data = await response.json();
-    //     setItems(data);
-    //   } catch (error) {
-    //     console.error('Error fetching items:', error);
-    //   } finally {
-    //     setLoading(false);
-    //   }
-    // };
-    // fetchItems();
-  }, []);
+        const response = await itemsService.getItems();
+        console.log("ItemsContext: API response received", {
+          hasData: !!response?.data,
+          dataType: response?.data ? typeof response.data : "undefined",
+          isArray: Array.isArray(response?.data),
+          length: response?.data?.length || 0,
+        });
 
-  // Function to add a new lost item
-  const addLostItem = (newItem) => {
-    // Generate a new id (would be handled by the backend in a real app)
-    const id =
-      items.length > 0 ? Math.max(...items.map((item) => item.id)) + 1 : 1;
+        // Check if we have valid data from the API
+        if (response && response.data && Array.isArray(response.data)) {
+          // Format the image URLs with proper server base URL
+          const formattedItems = response.data.map((item) => ({
+            ...item,
+            id: item._id || item.id, // Ensure we have an id field
+            name: item.title || item.name, // Support both title and name fields
+            status: item.status || "Missing", // Default to "Missing" if no status
+            image:
+              item.images && item.images.length > 0
+                ? formatImageUrl(item.images[0])
+                : null,
+            images: (item.images || []).map((img) => formatImageUrl(img)),
+          }));
 
-    // Add the new item with status "Missing" since it's a lost item
-    const itemToAdd = {
-      ...newItem,
-      id,
-      status: "Missing",
-      // Format date as "Month DD, YYYY" if it's in a different format
-      date: new Date(newItem.date).toLocaleDateString("en-US", {
-        month: "long",
-        day: "numeric",
-        year: "numeric",
-      }),
+          console.log("ItemsContext: Formatted items", {
+            count: formattedItems.length,
+            sample: formattedItems[0] || "No items",
+          });
+
+          setItems(formattedItems);
+        } else {
+          // If API fails, use initial items as fallback
+          console.warn(
+            "Using fallback data: API response format unexpected",
+            response
+          );
+          setItems(initialItems);
+          setError("Could not load items from server, using fallback data");
+        }
+      } catch (err) {
+        console.error("Error fetching items:", err);
+        // Fall back to initial items in case of API failure
+        setItems(initialItems);
+        setError("Could not connect to server, using fallback data");
+      } finally {
+        setLoading(false);
+      }
     };
 
-    // Update the items list
-    setItems([itemToAdd, ...items]); // Add to the beginning for chronological order
+    fetchItems();
+  }, [initialItems]);
+  // Using the formatImageUrl function from apiClient.js
+  // Function to add a new lost item
+  const addLostItem = async (newItem) => {
+    try {
+      // Call the API to create a lost item
+      const response = await itemsService.createLostItem({
+        title: newItem.name,
+        description: newItem.description,
+        category: newItem.category,
+        location: newItem.location,
+        date: newItem.date,
+        images: newItem.images || [],
+      }); // If successful, add the item to our local state
+      if (response && response.data) {
+        // Format the API response to match our expected format
+        const formattedItem = {
+          id: response.data._id,
+          name: response.data.title,
+          description: response.data.description,
+          location: response.data.location,
+          date: new Date(response.data.date).toLocaleDateString("en-US", {
+            month: "long",
+            day: "numeric",
+            year: "numeric",
+          }),
+          status:
+            response.data.status === "Lost" ? "Missing" : response.data.status,
+          category: response.data.category,
+          image:
+            response.data.images && response.data.images.length > 0
+              ? formatImageUrl(response.data.images[0])
+              : null,
+          images: (response.data.images || []).map((img) =>
+            formatImageUrl(img)
+          ),
+        };
 
-    return id; // Return the id for redirecting to the item details page
+        setItems([formattedItem, ...items]);
+        return formattedItem.id;
+      } else {
+        throw new Error("Invalid response from server");
+      }
+    } catch (error) {
+      console.error("Failed to add lost item:", error);
+      setError("Failed to add lost item. Please try again.");
+
+      // Fallback to client-side generation in case of API failure
+      const id =
+        items.length > 0 ? Math.max(...items.map((item) => item.id)) + 1 : 1;
+      const itemToAdd = {
+        ...newItem,
+        id,
+        status: "Missing",
+        date: new Date(newItem.date).toLocaleDateString("en-US", {
+          month: "long",
+          day: "numeric",
+          year: "numeric",
+        }),
+      };
+      setItems([itemToAdd, ...items]);
+      return id;
+    }
   };
 
   // Function to add a found item
-  const addFoundItem = (newItem) => {
-    // Generate a new id
-    const id =
-      items.length > 0 ? Math.max(...items.map((item) => item.id)) + 1 : 1;
+  const addFoundItem = async (newItem) => {
+    try {
+      // Call the API to create a found item
+      const response = await itemsService.createFoundItem({
+        title: newItem.name,
+        description: newItem.description,
+        category: newItem.category,
+        location: newItem.location,
+        date: newItem.date,
+        images: newItem.images || [],
+      }); // If successful, add the item to our local state
+      if (response && response.data) {
+        // Format the API response to match our expected format
+        const formattedItem = {
+          id: response.data._id,
+          name: response.data.title,
+          description: response.data.description,
+          location: response.data.location,
+          date: new Date(response.data.date).toLocaleDateString("en-US", {
+            month: "long",
+            day: "numeric",
+            year: "numeric",
+          }),
+          status: "Found",
+          category: response.data.category,
+          image:
+            response.data.images && response.data.images.length > 0
+              ? formatImageUrl(response.data.images[0])
+              : null,
+          images: (response.data.images || []).map((img) =>
+            formatImageUrl(img)
+          ),
+        };
 
-    // Add the new item with status "Found"
-    const itemToAdd = {
-      ...newItem,
-      id,
-      status: "Found",
-      // Format date if needed
-      date: new Date(newItem.date).toLocaleDateString("en-US", {
-        month: "long",
-        day: "numeric",
-        year: "numeric",
-      }),
-    };
+        setItems([formattedItem, ...items]);
+        return formattedItem.id;
+      } else {
+        throw new Error("Invalid response from server");
+      }
+    } catch (error) {
+      console.error("Failed to add found item:", error);
+      setError("Failed to add found item. Please try again.");
 
-    // Update the items list
-    setItems([itemToAdd, ...items]);
-
-    return id;
+      // Fallback to client-side generation in case of API failure
+      const id =
+        items.length > 0 ? Math.max(...items.map((item) => item.id)) + 1 : 1;
+      const itemToAdd = {
+        ...newItem,
+        id,
+        status: "Found",
+        date: new Date(newItem.date).toLocaleDateString("en-US", {
+          month: "long",
+          day: "numeric",
+          year: "numeric",
+        }),
+      };
+      setItems([itemToAdd, ...items]);
+      return id;
+    }
   };
-
   // Function to get a specific item by id
-  const getItemById = (id) => {
-    return items.find((item) => item.id === Number(id));
+  const getItemById = async (id) => {
+    try {
+      // First check if we already have the item in our local state
+      const localItem = items.find(
+        (item) => item.id === id || item.id === Number(id)
+      );
+      if (localItem) return localItem;
+
+      // If not in local state, fetch from API
+      const response = await itemsService.getItemById(id);
+      if (response && response.data) {
+        // Format the API response
+        const formattedItem = {
+          id: response.data._id,
+          name: response.data.title,
+          description: response.data.description,
+          location: response.data.location,
+          date: new Date(response.data.date).toLocaleDateString("en-US", {
+            month: "long",
+            day: "numeric",
+            year: "numeric",
+          }),
+          status:
+            response.data.status === "Lost" ? "Missing" : response.data.status,
+          category: response.data.category,
+          image:
+            response.data.images && response.data.images.length > 0
+              ? formatImageUrl(response.data.images[0])
+              : null,
+          images: (response.data.images || []).map((img) =>
+            formatImageUrl(img)
+          ),
+        };
+
+        // Add to our local state cache
+        setItems((prevItems) => {
+          // Only add if not already in the list
+          if (!prevItems.find((item) => item.id === formattedItem.id)) {
+            return [...prevItems, formattedItem];
+          }
+          return prevItems;
+        });
+
+        return formattedItem;
+      }
+      return null;
+    } catch (error) {
+      console.error("Failed to get item details:", error);
+      setError("Failed to get item details");
+      return null;
+    }
   };
 
   // Context value with items and functions
   const value = {
     items,
     loading,
+    error,
     addLostItem,
     addFoundItem,
     getItemById,

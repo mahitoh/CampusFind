@@ -5,7 +5,15 @@ import * as authService from "../services/authService";
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
+  // Initialize user state from localStorage to avoid flashing login screen
+  const [user, setUser] = useState(() => {
+    try {
+      return authService.getCurrentUser();
+    } catch (error) {
+      console.error("Error loading user from localStorage:", error);
+      return null;
+    }
+  });
   const [loading, setLoading] = useState(true);
 
   // Check for existing user session on component mount
@@ -54,6 +62,9 @@ export const AuthProvider = ({ children }) => {
     authService.signOut();
     setUser(null);
   };
+  // isAuthenticated should check both the state and localStorage
+  // this ensures authentication persists across page reloads
+  const isAuthenticated = !!user || authService.isAuthenticated();
 
   const value = {
     user,
@@ -61,7 +72,7 @@ export const AuthProvider = ({ children }) => {
     signIn,
     signUp,
     signOut,
-    isAuthenticated: !!user,
+    isAuthenticated,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -1,20 +1,33 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { MapPinIcon } from "@heroicons/react/24/outline";
+import { useItems } from "../context/ItemsContext";
 
 /**
  * Submit Found Item page component
  * Allows users to submit details about items they found on campus
  */
 const SubmitFound = () => {
+  const { addFoundItem } = useItems();
+  const navigate = useNavigate();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState(null);
+
+  // Display error message if present
+  React.useEffect(() => {
+    if (error) {
+      console.error(error);
+    }
+  }, [error]);
+
   const [formData, setFormData] = useState({
-    itemName: "",
+    name: "",
     category: "",
-    dateFound: "",
-    locationFound: "",
+    date: "",
+    location: "",
     description: "",
     turnInMethod: "office", // Default to office drop-off
-    image: null,
+    images: [],
   });
 
   const [previewImage, setPreviewImage] = useState(null);
@@ -38,22 +51,21 @@ const SubmitFound = () => {
       [name]: value,
     }));
   };
-
   // Handle image upload
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
       setFormData((prev) => ({
         ...prev,
-        image: file,
+        images: [file],
       }));
 
       // Create preview URL
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPreviewImage(reader.result);
-      };
-      reader.readAsDataURL(file);
+      const previewUrl = URL.createObjectURL(file);
+      setPreviewImage(previewUrl);
+
+      // Log for debugging
+      console.log("Image preview created:", previewUrl);
     }
   };
 
@@ -61,31 +73,45 @@ const SubmitFound = () => {
   const handleClearImage = () => {
     setFormData((prev) => ({
       ...prev,
-      image: null,
+      images: [],
     }));
     setPreviewImage(null);
   };
-
   // Handle form submission
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Submitting found item:", formData);
+    setIsSubmitting(true);
+    setError(null);
 
-    // Here you would typically call an API to submit the form data
-    // For now, just show an alert
-    alert(
-      "Thank you for submitting a found item! The information has been recorded."
-    );
+    try {
+      console.log("Submitting found item:", formData);
+
+      // Call the API through the context
+      const itemId = await addFoundItem(formData);
+
+      alert(
+        "Thank you for submitting a found item! The information has been recorded."
+      );
+
+      // Navigate to the item details page
+      navigate(`/item-details/${itemId}`);
+    } catch (err) {
+      console.error("Failed to submit found item:", err);
+      setError("Failed to submit your report. Please try again.");
+      alert("There was a problem submitting your report. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
 
     // Reset form after submission
     setFormData({
-      itemName: "",
+      name: "",
       category: "",
-      dateFound: "",
-      locationFound: "",
+      date: "",
+      location: "",
       description: "",
       turnInMethod: "office",
-      image: null,
+      images: [],
     });
     setPreviewImage(null);
   };
@@ -292,17 +318,18 @@ const SubmitFound = () => {
               <div className="space-y-6">
                 {/* Item Name */}
                 <div>
+                  {" "}
                   <label
-                    htmlFor="itemName"
+                    htmlFor="name"
                     className="block text-sm font-medium mb-2"
                   >
                     Item Name
                   </label>
                   <input
                     type="text"
-                    id="itemName"
-                    name="itemName"
-                    value={formData.itemName}
+                    id="name"
+                    name="name"
+                    value={formData.name}
                     onChange={handleChange}
                     placeholder="e.g. Silver Watch"
                     className="w-full bg-gray-900 border-gray-700 rounded-md p-3 text-white placeholder-gray-500"
@@ -355,35 +382,35 @@ const SubmitFound = () => {
                 {/* Date and Location (Two Columns) */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
+                    {" "}
                     <label
-                      htmlFor="dateFound"
+                      htmlFor="date"
                       className="block text-sm font-medium mb-2"
                     >
                       Date Found
                     </label>
                     <input
                       type="date"
-                      id="dateFound"
-                      name="dateFound"
-                      value={formData.dateFound}
+                      id="date"
+                      name="date"
+                      value={formData.date}
                       onChange={handleChange}
                       className="w-full bg-gray-900 border-gray-700 rounded-md p-3 text-white"
                       required
                     />
-                  </div>
-
+                  </div>{" "}
                   <div>
                     <label
-                      htmlFor="locationFound"
+                      htmlFor="location"
                       className="block text-sm font-medium mb-2"
                     >
                       Location Found
                     </label>
                     <input
                       type="text"
-                      id="locationFound"
-                      name="locationFound"
-                      value={formData.locationFound}
+                      id="location"
+                      name="location"
+                      value={formData.location}
                       onChange={handleChange}
                       placeholder="e.g. Cafeteria, Table 12"
                       className="w-full bg-gray-900 border-gray-700 rounded-md p-3 text-white placeholder-gray-500"
@@ -427,9 +454,11 @@ const SubmitFound = () => {
                   <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-700 border-dashed rounded-md">
                     {previewImage ? (
                       <div className="space-y-2 text-center">
+                        {" "}
                         <img
                           src={previewImage}
                           alt="Preview"
+                          crossOrigin="anonymous"
                           className="mx-auto h-32 object-cover"
                         />
                         <button
@@ -543,9 +572,10 @@ const SubmitFound = () => {
               <div className="mt-8 text-right">
                 <button
                   type="submit"
-                  className="inline-flex justify-center py-2 px-6 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  disabled={isSubmitting}
+                  className="inline-flex justify-center py-2 px-6 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
                 >
-                  Submit Report
+                  {isSubmitting ? "Submitting..." : "Submit Report"}
                 </button>
               </div>
             </form>

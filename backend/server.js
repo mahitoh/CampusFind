@@ -39,14 +39,35 @@ connectDB();
 initSocketIO(io);
 
 // Middleware
-app.use(cors());
-app.use(helmet());
+app.use(
+  cors({
+    origin: process.env.CORS_ORIGIN || "http://localhost:5173", // Vite default port
+    credentials: true,
+    exposedHeaders: ["Content-Disposition"],
+  })
+);
+
+// Configure Helmet with cross-origin resource policy to allow images to be loaded from any origin
+app.use(
+  helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+  })
+);
+
 app.use(morgan("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Static files (for uploaded images)
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+// Serve static files with proper CORS headers
+app.use(
+  "/uploads",
+  (req, res, next) => {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
+    next();
+  },
+  express.static(path.join(__dirname, "uploads"))
+);
 
 // API Routes
 app.use("/api/auth", authRoutes);

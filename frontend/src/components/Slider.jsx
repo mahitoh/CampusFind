@@ -18,6 +18,7 @@ const Slider = ({ images }) => {
           key={index}
           src={image}
           alt={`background ${index + 1}`}
+          crossOrigin="anonymous"
           className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${
             index === currentImageIndex ? "opacity-15" : "opacity-0"
           }`}

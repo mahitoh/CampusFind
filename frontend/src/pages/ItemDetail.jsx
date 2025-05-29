@@ -6,6 +6,7 @@ import {
   ArrowLeftIcon,
 } from "@heroicons/react/24/outline";
 import { CalendarIcon } from "@heroicons/react/24/solid";
+import { useItems } from "../context/ItemsContext";
 
 /**
  * Item Detail page component
@@ -15,58 +16,27 @@ const ItemDetail = () => {
   const { id } = useParams();
   const [item, setItem] = useState(null);
   const [loading, setLoading] = useState(true);
+  const { getItemById } = useItems();
 
   // Fetch item data when component mounts
   useEffect(() => {
-    // This would typically be an API call to get item details
-    // For now, we'll use mock data
-    const mockItems = [
-      {
-        id: "1",
-        name: 'MacBook Pro 13"',
-        location: "University Library, Study Room 4",
-        date: "May 15, 2023",
-        description:
-          "Space gray MacBook Pro with stickers on the cover. Last seen in the library.",
-        status: "Missing",
-        reportedBy: "John Wilson",
-        email: "j.wilson@example.edu",
-        category: "Electronics",
-        images: [],
-      },
-      {
-        id: "2",
-        name: "Hydroflask Water Bottle",
-        location: "Science Building, Room 302",
-        date: "May 17, 2023",
-        description: "Blue 32oz Hydroflask with university logo sticker.",
-        status: "Found",
-        reportedBy: "Sarah Martinez",
-        email: "s.martinez@example.edu",
-        category: "Accessories",
-        images: [],
-      },
-      {
-        id: "3",
-        name: "Student ID Card",
-        location: "Student Center",
-        date: "May 18, 2023",
-        description: "Student ID for James Wilson.",
-        status: "Missing",
-        reportedBy: "James Wilson",
-        email: "james.wilson@example.edu",
-        category: "ID/Cards",
-        images: [],
-      },
-    ];
+    const fetchItem = async () => {
+      try {
+        const fetchedItem = await getItemById(id);
+        if (fetchedItem) {
+          setItem(fetchedItem);
+        } else {
+          console.error(`Item with id ${id} not found`);
+        }
+      } catch (err) {
+        console.error("Error fetching item details:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    // Simulate API delay
-    setTimeout(() => {
-      const foundItem = mockItems.find((item) => item.id === id);
-      setItem(foundItem || null);
-      setLoading(false);
-    }, 500);
-  }, [id]);
+    fetchItem();
+  }, [id, getItemById]);
 
   // Handle claim/contact button click
   const handleActionClick = () => {
@@ -188,10 +158,12 @@ const ItemDetail = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {/* Item Image */}
               <div className="flex items-center justify-center bg-gray-200 h-64 rounded-md">
+                {" "}
                 {item.images && item.images.length > 0 ? (
                   <img
                     src={item.images[0]}
                     alt={item.name}
+                    crossOrigin="anonymous"
                     className="object-contain h-full"
                   />
                 ) : (

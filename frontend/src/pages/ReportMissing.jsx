@@ -1,7 +1,11 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { MapPinIcon, BellIcon } from "@heroicons/react/24/outline";
-import { HomeIcon, MagnifyingGlassIcon } from "@heroicons/react/24/solid";
+import { MapPinIcon, BellIcon, UserIcon } from "@heroicons/react/24/outline";
+import {
+  HomeIcon,
+  MagnifyingGlassIcon,
+  ArrowRightOnRectangleIcon,
+} from "@heroicons/react/24/solid";
 import { useItems } from "../context/ItemsContext";
 
 /**
@@ -88,7 +92,7 @@ const ReportMissing = () => {
     { name: "Lost Items", href: "/lost-items", icon: MagnifyingGlassIcon },
     { name: "Report Missing", href: "/report-missing", icon: BellIcon },
     { name: "Submit Found", href: "/submit-found", icon: MapPinIcon },
-    { name: "My Items", href: "/my-items", icon: MagnifyingGlassIcon },
+    { name: "My Items", href: "/my-items", icon: UserIcon },
   ];
 
   return (
@@ -98,27 +102,27 @@ const ReportMissing = () => {
         <div className="flex items-center p-4">
           <span className="text-lg font-medium">Dashboard</span>
         </div>
-        <nav className="flex-1 px-4 py-2 space-y-1">
+        <nav className="p-4 space-y-1 flex-grow">
           {navigation.map((item) => {
             const Icon = item.icon;
-            const isActive = item.href === "/report-missing";
+            const isactive = item.href === "/report-missing";
             return (
               <Link
                 key={item.name}
                 to={item.href}
-                className={`flex items-center p-3 ${
-                  isActive
+                className={`flex items-center p-3 rounded-md ${
+                  isactive
                     ? "text-blue-600"
                     : "text-gray-600 hover:text-gray-800"
                 }`}
               >
                 <Icon className="h-5 w-5 mr-3" />
-                <span>{item.name}</span>
+                <span className="text-sm font-medium">{item.name}</span>
               </Link>
             );
           })}
         </nav>
-        <div className="p-4 border-t">
+        {/* <div className="p-4 border-t mt-auto">
           <button className="flex items-center p-2 text-red-600 w-full">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -136,6 +140,15 @@ const ReportMissing = () => {
             </svg>
             <span>Log Out</span>
           </button>
+        </div> */}
+        <div className="p-4 border-t mt-auto">
+          <Link
+            to="/logout"
+            className="flex items-center p-3 text-red-600 hover:text-red-700 rounded-md"
+          >
+            <ArrowRightOnRectangleIcon className="h-5 w-5 mr-3" />
+            <span className="text-sm font-medium">Log Out</span>
+          </Link>
         </div>
       </div>
 

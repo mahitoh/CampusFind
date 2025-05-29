@@ -81,19 +81,17 @@ export const ItemsProvider = ({ children }) => {
     },
   ];
   useEffect(() => {
+    let isMounted = true;
+
     // Fetch items from the API
     const fetchItems = async () => {
       try {
-        setLoading(true);
-        console.log("ItemsContext: Fetching items from API...");
+        if (!isMounted) return;
 
+        setLoading(true);
         const response = await itemsService.getItems();
-        console.log("ItemsContext: API response received", {
-          hasData: !!response?.data,
-          dataType: response?.data ? typeof response.data : "undefined",
-          isArray: Array.isArray(response?.data),
-          length: response?.data?.length || 0,
-        });
+
+        if (!isMounted) return;
 
         // Check if we have valid data from the API
         if (response && response.data && Array.isArray(response.data)) {
@@ -110,33 +108,34 @@ export const ItemsProvider = ({ children }) => {
             images: (item.images || []).map((img) => formatImageUrl(img)),
           }));
 
-          console.log("ItemsContext: Formatted items", {
-            count: formattedItems.length,
-            sample: formattedItems[0] || "No items",
-          });
-
           setItems(formattedItems);
         } else {
           // If API fails, use initial items as fallback
-          console.warn(
-            "Using fallback data: API response format unexpected",
-            response
-          );
-          setItems(initialItems);
           setError("Could not load items from server, using fallback data");
+          if (isMounted) {
+            setItems(initialItems);
+          }
         }
       } catch (err) {
         console.error("Error fetching items:", err);
-        // Fall back to initial items in case of API failure
-        setItems(initialItems);
-        setError("Could not connect to server, using fallback data");
+        if (isMounted) {
+          // Fall back to initial items in case of API failure
+          setItems(initialItems);
+          setError("Could not connect to server, using fallback data");
+        }
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     };
 
     fetchItems();
-  }, [initialItems]);
+
+    return () => {
+      isMounted = false;
+    };
+  }, []); // Remove initialItems from dependency array
   // Using the formatImageUrl function from apiClient.js
   // Function to add a new lost item
   const addLostItem = async (newItem) => {

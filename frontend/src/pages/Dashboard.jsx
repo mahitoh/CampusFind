@@ -107,7 +107,7 @@ const Dashboard = ({ activeTab = "dashboard" }) => {
     { name: "Lost Items", href: "/lost-items", icon: MagnifyingGlassIcon },
     { name: "Report Missing", href: "/report-missing", icon: BellIcon },
     { name: "Submit Found", href: "/submit-found", icon: MapPinIcon },
-    { name: "My Items", href: "/my-items", icon: MagnifyingGlassIcon },
+    { name: "My Items", href: "/my-items", icon: UserIcon },
   ];
 
   const isActive = (path) => {
@@ -222,7 +222,7 @@ const Dashboard = ({ activeTab = "dashboard" }) => {
               </Link>
             </div>
           </div>
-          <div className="grid grid-cols-4 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
             {quickStats.map((stat, index) => {
               const Icon = stat.icon;
               let iconClass = "";
@@ -249,7 +249,7 @@ const Dashboard = ({ activeTab = "dashboard" }) => {
               );
             })}
           </div>{" "}
-          <div className="grid grid-cols-2 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
             <div className="bg-black text-white rounded-lg">
               <div className="p-6">
                 <h3 className="text-lg font-medium text-white">

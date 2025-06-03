@@ -8,9 +8,22 @@ import { useAuth } from "../../context/AuthContextNew";
  * @param {React.ReactNode} props.children - Child components
  */
 const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, loading } = useAuth();
 
-  if (!isAuthenticated) {
+  // Check if there's a token in localStorage to prevent flash of login screen
+  const hasToken = localStorage.getItem("user") !== null;
+
+  // If still loading, show nothing or a loading spinner
+  if (loading && !hasToken) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        Loading...
+      </div>
+    );
+  }
+
+  // Redirect to login if not authenticated
+  if (!isAuthenticated && !hasToken) {
     return <Navigate to="/login" replace />;
   }
 
@@ -23,9 +36,22 @@ const ProtectedRoute = ({ children }) => {
  * @param {React.ReactNode} props.children - Child components
  */
 const PublicRoute = ({ children }) => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, loading } = useAuth();
 
-  if (isAuthenticated) {
+  // Check if there's a token in localStorage
+  const hasToken = localStorage.getItem("user") !== null;
+
+  // If loading and has token, show loading indicator
+  if (loading && hasToken) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        Loading...
+      </div>
+    );
+  }
+
+  // Redirect to dashboard if authenticated
+  if (isAuthenticated || hasToken) {
     return <Navigate to="/dashboard" replace />;
   }
 

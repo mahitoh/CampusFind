@@ -7,9 +7,14 @@ import bg3 from "./assets/images/download1.jpg";
 import bg4 from "./assets/images/images.jpg";
 import HomePageLayout from "./components/layout/HomePageLayout";
 import { AuthProvider } from "./context/AuthContextNew";
+import { ItemsProvider } from "./context/ItemsContext";
 
 // Import routes configuration
 import routes from "./routes";
+
+// Import Debuggers
+import AuthDebugger from "./components/common/AuthDebugger";
+import ItemsDebugger from "./components/debug/ItemsDebugger";
 
 function App() {
   const images = [bg1, bg2, bg3, bg4];
@@ -29,10 +34,11 @@ function App() {
     const element = useRoutes(routesWithHomepage);
     return element;
   };
-
   return (
     <AuthProvider>
-      <AppRoutes />
+      <ItemsProvider>
+        <AppRoutes />
+      </ItemsProvider>
     </AuthProvider>
   );
 }

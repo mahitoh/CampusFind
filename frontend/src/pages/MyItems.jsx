@@ -56,7 +56,7 @@ const MyItems = () => {
       {/* Left Sidebar Navigation */}
       <div className="w-64 bg-white border-r border-gray-200 flex flex-col h-screen">
         <div className="flex items-center p-4 border-b">
-          <Link to="/">
+          <Link to="/dashboard">
             <span className="text-lg font-semibold">Dashboard</span>
           </Link>
         </div>

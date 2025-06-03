@@ -1,22 +1,33 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
-import { MapPinIcon, BellIcon } from "@heroicons/react/24/outline";
-import { HomeIcon, MagnifyingGlassIcon } from "@heroicons/react/24/solid";
+import { Link, useNavigate } from "react-router-dom";
+import { MapPinIcon, BellIcon, UserIcon } from "@heroicons/react/24/outline";
+import {
+  HomeIcon,
+  MagnifyingGlassIcon,
+  ArrowRightOnRectangleIcon,
+} from "@heroicons/react/24/solid";
+import { useItems } from "../context/ItemsContext";
 
 /**
  * Report Missing Item page component
  * Allows users to report details about items they lost on campus
  */
 const ReportMissing = () => {
+  const { addLostItem } = useItems();
+  const navigate = useNavigate();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+
   const [formData, setFormData] = useState({
-    itemName: "",
+    name: "",
     category: "",
-    dateLastSeen: "",
-    locationLastSeen: "",
+    date: "",
+    location: "",
     description: "",
     contactPhone: "",
+    images: [],
   });
-
   // Handle form input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -26,23 +37,50 @@ const ReportMissing = () => {
     }));
   };
 
+  // Handle image upload
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Create a preview URL for the image
+      setImagePreview(URL.createObjectURL(file));
+
+      // Add to form data
+      setFormData((prev) => ({
+        ...prev,
+        images: [file],
+      }));
+    }
+  };
   // Handle form submission
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Submitting lost item report:", formData);
+    setIsSubmitting(true);
+    setError(null);
 
-    // Here you would typically call an API to submit the form data
-    // For now, just show an alert
-    alert(
-      "Your lost item report has been submitted! We'll notify you if we find a match."
-    );
+    try {
+      console.log("Submitting lost item report:", formData);
 
-    // Reset form after submission
+      // Call the API through the context
+      const itemId = await addLostItem(formData);
+
+      alert(
+        "Your lost item report has been submitted! We'll notify you if we find a match."
+      );
+
+      // Navigate to the item details page or back to the lost items list
+      navigate(`/item-details/${itemId}`);
+    } catch (err) {
+      console.error("Failed to submit report:", err);
+      setError("Failed to submit your report. Please try again.");
+      alert("There was a problem submitting your report. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    } // Reset form after submission
     setFormData({
-      itemName: "",
+      name: "",
       category: "",
-      dateLastSeen: "",
-      locationLastSeen: "",
+      date: "",
+      location: "",
       description: "",
       contactPhone: "",
     });
@@ -54,7 +92,7 @@ const ReportMissing = () => {
     { name: "Lost Items", href: "/lost-items", icon: MagnifyingGlassIcon },
     { name: "Report Missing", href: "/report-missing", icon: BellIcon },
     { name: "Submit Found", href: "/submit-found", icon: MapPinIcon },
-    { name: "My Items", href: "/my-items", icon: MagnifyingGlassIcon },
+    { name: "My Items", href: "/my-items", icon: UserIcon },
   ];
 
   return (
@@ -64,27 +102,27 @@ const ReportMissing = () => {
         <div className="flex items-center p-4">
           <span className="text-lg font-medium">Dashboard</span>
         </div>
-        <nav className="flex-1 px-4 py-2 space-y-1">
+        <nav className="p-4 space-y-1 flex-grow">
           {navigation.map((item) => {
             const Icon = item.icon;
-            const isActive = item.href === "/report-missing";
+            const isactive = item.href === "/report-missing";
             return (
               <Link
                 key={item.name}
                 to={item.href}
-                className={`flex items-center p-3 ${
-                  isActive
+                className={`flex items-center p-3 rounded-md ${
+                  isactive
                     ? "text-blue-600"
                     : "text-gray-600 hover:text-gray-800"
                 }`}
               >
                 <Icon className="h-5 w-5 mr-3" />
-                <span>{item.name}</span>
+                <span className="text-sm font-medium">{item.name}</span>
               </Link>
             );
           })}
         </nav>
-        <div className="p-4 border-t">
+        {/* <div className="p-4 border-t mt-auto">
           <button className="flex items-center p-2 text-red-600 w-full">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -102,6 +140,15 @@ const ReportMissing = () => {
             </svg>
             <span>Log Out</span>
           </button>
+        </div> */}
+        <div className="p-4 border-t mt-auto">
+          <Link
+            to="/logout"
+            className="flex items-center p-3 text-red-600 hover:text-red-700 rounded-md"
+          >
+            <ArrowRightOnRectangleIcon className="h-5 w-5 mr-3" />
+            <span className="text-sm font-medium">Log Out</span>
+          </Link>
         </div>
       </div>
 
@@ -150,11 +197,15 @@ const ReportMissing = () => {
             </div>
           </div>
         </header>
-
-        {/* Main Form Content */}
+        {/* Main Form Content */}{" "}
         <main className="flex-1 p-6 bg-white">
           <div className="max-w-4xl mx-auto">
             {/* Introduction Text */}
+            {error && (
+              <div className="mb-4 p-4 bg-red-100 text-red-700 rounded-md">
+                {error}
+              </div>
+            )}
             <div className="mb-8 text-center">
               <p className="text-gray-600 mt-2">
                 Fill out this form with as much detail as possible to help us
@@ -173,28 +224,26 @@ const ReportMissing = () => {
               <p className="text-gray-400 mb-6">
                 Please provide all relevant information about your lost item.
               </p>
-
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                {/* Item Name */}
+                {/* Item Name */}{" "}
                 <div>
                   <label
-                    htmlFor="itemName"
+                    htmlFor="name"
                     className="block text-sm font-medium mb-2"
                   >
                     Item Name
                   </label>
                   <input
                     type="text"
-                    id="itemName"
-                    name="itemName"
-                    value={formData.itemName}
+                    id="name"
+                    name="name"
+                    value={formData.name}
                     onChange={handleChange}
                     placeholder="e.g. Blue Backpack"
                     className="w-full bg-gray-900 border-gray-700 rounded-md p-3 text-white placeholder-gray-500"
                     required
                   />
                 </div>
-
                 {/* Item Category */}
                 <div>
                   <label
@@ -239,39 +288,38 @@ const ReportMissing = () => {
                   </div>
                 </div>
               </div>
-
               {/* Date and Location Last Seen */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                {" "}
                 <div>
                   <label
-                    htmlFor="dateLastSeen"
+                    htmlFor="date"
                     className="block text-sm font-medium mb-2"
                   >
                     Date Last Seen
                   </label>
                   <input
                     type="date"
-                    id="dateLastSeen"
-                    name="dateLastSeen"
-                    value={formData.dateLastSeen}
+                    id="date"
+                    name="date"
+                    value={formData.date}
                     onChange={handleChange}
                     className="w-full bg-gray-900 border-gray-700 rounded-md p-3 text-white"
                     required
                   />
                 </div>
-
                 <div>
                   <label
-                    htmlFor="locationLastSeen"
+                    htmlFor="location"
                     className="block text-sm font-medium mb-2"
                   >
                     Location Last Seen
                   </label>
                   <input
                     type="text"
-                    id="locationLastSeen"
-                    name="locationLastSeen"
-                    value={formData.locationLastSeen}
+                    id="location"
+                    name="location"
+                    value={formData.location}
                     onChange={handleChange}
                     placeholder="e.g. Library, 2nd Floor"
                     className="w-full bg-gray-900 border-gray-700 rounded-md p-3 text-white placeholder-gray-500"
@@ -279,7 +327,6 @@ const ReportMissing = () => {
                   />
                 </div>
               </div>
-
               {/* Item Description */}
               <div className="mb-6">
                 <label
@@ -302,8 +349,80 @@ const ReportMissing = () => {
                   The more details you provide, the easier it will be to
                   identify your item.
                 </p>
-              </div>
+              </div>{" "}
+              {/* Item Image Upload */}
+              <div className="mb-6">
+                <label
+                  htmlFor="imageUpload"
+                  className="block text-sm font-medium mb-2"
+                >
+                  Upload Image (Optional)
+                </label>
+                <div className="flex items-center space-x-4">
+                  <label className="w-full flex flex-col items-center px-4 py-6 bg-gray-900 rounded-md tracking-wide cursor-pointer hover:bg-gray-800 transition ease-in-out duration-150">
+                    <svg
+                      className="w-8 h-8 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                      />
+                    </svg>
+                    <span className="mt-2 text-sm text-gray-400">
+                      Select an image
+                    </span>
+                    <input
+                      type="file"
+                      id="imageUpload"
+                      className="hidden"
+                      accept="image/*"
+                      onChange={handleImageChange}
+                    />
+                  </label>
 
+                  {imagePreview && (
+                    <div className="relative w-24 h-24">
+                      {" "}
+                      <img
+                        src={imagePreview}
+                        alt="Preview"
+                        crossOrigin="anonymous"
+                        className="h-24 w-24 object-cover rounded-md"
+                      />
+                      <button
+                        type="button"
+                        className="absolute -top-2 -right-2 bg-red-600 rounded-full p-1 text-white"
+                        onClick={() => {
+                          setImagePreview(null);
+                          setFormData((prev) => ({ ...prev, images: [] }));
+                        }}
+                      >
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M6 18L18 6M6 6l12 12"
+                          />
+                        </svg>
+                      </button>
+                    </div>
+                  )}
+                </div>
+                <p className="text-gray-400 text-sm mt-2">
+                  Upload a clear image of your item to help others identify it.
+                </p>
+              </div>
               {/* Contact Phone (Optional) */}
               <div className="mb-6">
                 <label
@@ -325,14 +444,14 @@ const ReportMissing = () => {
                   We'll use this to notify you faster if your item is found.
                 </p>
               </div>
-
               {/* Submit Button */}
               <div className="flex justify-end">
                 <button
                   type="submit"
-                  className="bg-white text-black py-2 px-6 rounded-md hover:bg-gray-100 transition-colors"
+                  disabled={isSubmitting}
+                  className="bg-white text-black py-2 px-6 rounded-md hover:bg-gray-100 transition-colors disabled:opacity-50"
                 >
-                  Submit Report
+                  {isSubmitting ? "Submitting..." : "Submit Report"}
                 </button>
               </div>
             </form>

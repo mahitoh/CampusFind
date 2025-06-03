@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 /* Glass card effect */
-.glass-card {
+/* .glass-card {
   background: rgba(255, 255, 255, 0.7);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.2);
@@ -12,10 +12,10 @@
 .glass-card:hover {
   transform: translateY(-5px);
   box-shadow: 0 10px 40px 0 rgba(0, 0, 0, 0.12);
-}
+} */
 
 /* Fix for animation delay with Tailwind */
-.delay-50ms {
+/* .delay-50ms {
   transition-delay: 50ms;
 }
 .delay-100ms {
@@ -38,10 +38,10 @@
 }
 .delay-400ms {
   transition-delay: 400ms;
-}
+} */
 
 /* Footer styles */
-.footer-link-hover {
+/* .footer-link-hover {
   position: relative;
   display: inline-block;
 }
@@ -59,4 +59,4 @@
 
 .footer-link-hover:hover::after {
   width: 100%;
-}
+} */

@@ -128,7 +128,6 @@ const SignUp = ({ isLoginMode = false }) => {
   };
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-[#098dc1] via-[#098dc1] to-[#f417de]">
-      {" "}
       {/* Back button - positioned absolutely at the top-left corner */}
       <button
         onClick={() => navigate("/")}
@@ -146,7 +145,6 @@ const SignUp = ({ isLoginMode = false }) => {
             isRegister ? "-translate-x-full" : "translate-x-0"
           }`}
         >
-          {" "}
           <h2 className="text-2xl font-bold text-gray-800 mb-6">Login</h2>{" "}
           <form onSubmit={handleLoginSubmit}>
             <FormInput
@@ -172,7 +170,7 @@ const SignUp = ({ isLoginMode = false }) => {
             <FormOptions />
             <SubmitButton text="Login" />
           </form>
-          <SocialMediaButtons />{" "}
+          {/* <SocialMediaButtons /> */}
           <p className="text-sm mt-4 text-center cursor-pointer">
             <a
               href="#"
@@ -193,10 +191,7 @@ const SignUp = ({ isLoginMode = false }) => {
             isRegister ? "translate-x-0" : "translate-x-full"
           }`}
         >
-          {" "}
-          <h2 className="text-2xl font-bold text-gray-800 mb-6">
-            Register
-          </h2>{" "}
+          <h2 className="text-2xl font-bold text-gray-800 mb-6">Register</h2>
           <form onSubmit={handleRegisterSubmit}>
             <FormInput
               icon={FaUser}
@@ -241,7 +236,7 @@ const SignUp = ({ isLoginMode = false }) => {
             <FormOptions />
             <SubmitButton text="Register" />
           </form>
-          <SocialMediaButtons />{" "}
+          {/* <SocialMediaButtons /> */}
           <p className="text-sm mt-4 text-center">
             <a
               href="#"

@@ -4,12 +4,41 @@
 import axios from "axios";
 
 /**
+ * Get the API base URL from environment or default
+ */
+export const API_BASE_URL =
+  import.meta.env.VITE_API_URL || "http://localhost:8000/api";
+
+/**
+ * Get the base URL for the server (without /api)
+ */
+export const SERVER_BASE_URL = API_BASE_URL.replace(/\/api$/, "");
+
+/**
+ * Format an image URL to ensure it includes the full server URL
+ * @param {string} imageUrl - The relative image path or full URL
+ * @returns {string} - Properly formatted image URL
+ */
+export const formatImageUrl = (imageUrl) => {
+  if (!imageUrl) return null;
+  if (imageUrl.startsWith("http")) return imageUrl;
+
+  // Make sure the URL starts with a slash
+  const normalizedPath = imageUrl.startsWith("/") ? imageUrl : `/${imageUrl}`;
+
+  // Add crossorigin attribute to help with CORS
+  const url = `${SERVER_BASE_URL}${normalizedPath}`;
+  console.log("Formatted image URL:", url);
+  return url;
+};
+
+/**
  * Creates a configured axios instance for API requests
  * @returns {Object} - Configured axios instance
  */
 const createApiClient = () => {
   const instance = axios.create({
-    baseURL: import.meta.env.VITE_API_URL || "http://localhost:8000/api",
+    baseURL: API_BASE_URL,
     headers: {
       "Content-Type": "application/json",
     },

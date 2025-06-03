@@ -9,9 +9,9 @@ import {
 
 const Footer = () => {
   return (
-    <footer className="bg-gray-800 px-4 md:px-16 lg:px-28 py-2">
-      <div className="grid grid-cols-3 md:grid-cols-3 gap-6 mt-8 justify-center">
-        <div className="mr-10">
+    <footer className="bg-gray-800 px-4 items-center md:px-16 lg:px-28 py-2">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8 justify-center">
+        <div className="lg:mr-10 mr-0">
           <h2 className="text-lg font-bold mb-4 text-white ">
             About CampusFind
           </h2>
@@ -53,7 +53,6 @@ const Footer = () => {
           <h2 className="text-lg font-bold mb-4 text-white">Follow Us</h2>
           <ul className="flex space-x-4 ">
             <li>
-              {" "}
               <FaFacebook className="text-[#a402cc] hover:text-white cursor-pointer" />
               <a href="#" className="text-[#a402cc] hover:text-white">
                 <i className="fab fa-facebook"></i>
@@ -66,21 +65,18 @@ const Footer = () => {
               </a>
             </li>
             <li>
-              {" "}
               <FaInstagram className="text-[#a402cc] hover:text-white cursor-pointer" />
               <a href="#" className="text-gray-400 hover:text-white">
                 <i className="fab fa-instagram"></i>
               </a>
             </li>
             <li>
-              {" "}
               <FaLinkedin className="text-[#a402cc] hover:text-white cursor-pointer" />
               <a href="#" className="text-gray-400 hover:text-white">
                 <i className="fab fa-linkedin"></i>
               </a>
             </li>
             <li>
-              {" "}
               <FaGithub className="text-[#a402cc] hover:text-white cursor-pointer" />
               <a href="#" className="text-gray-400 hover:text-white">
                 <i className="fab fa-linkedin"></i>

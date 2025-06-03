@@ -9,12 +9,16 @@ import {
   UserIcon,
   ArrowRightOnRectangleIcon,
 } from "@heroicons/react/24/solid";
+import { useItems } from "../context/ItemsContext";
 
 /**
  * Lost Items page component
  * Displays all lost items reported on campus with filtering capabilities
  */
 const LostItems = () => {
+  // Get items from context
+  const { items: allItems, loading } = useItems();
+
   // State for search and filters
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
@@ -49,74 +53,26 @@ const LostItems = () => {
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, []);
+  }, []); // Use items from context instead of hardcoded data
+  // Filter out found items, keep only missing/lost items
+  const lostItems = Array.isArray(allItems)
+    ? allItems.filter(
+        (item) => item.status === "Missing" || item.status === "Lost"
+      )
+    : [];
 
-  // Example lost items data
-  const lostItems = [
-    {
-      id: 1,
-      name: 'MacBook Pro 13"',
-      location: "University Library, Study Room 4",
-      date: "May 15, 2023",
-      description:
-        "Space gray MacBook Pro with stickers on the cover. Last seen in the library.",
-      status: "Missing",
-      image: null, // placeholder for image
-      category: "Electronics",
-    },
-    {
-      id: 2,
-      name: "Hydroflask Water Bottle",
-      location: "Science Building, Room 302",
-      date: "May 17, 2023",
-      description: "Blue 32oz Hydroflask with university logo sticker.",
-      status: "Found",
-      image: null, // placeholder for image
-      category: "Accessories",
-    },
-    {
-      id: 3,
-      name: "Student ID Card",
-      location: "Student Center",
-      date: "May 18, 2023",
-      description: "Student ID for James Wilson.",
-      status: "Missing",
-      image: null, // placeholder for image
-      category: "ID/Cards",
-    },
-    {
-      id: 4,
-      name: "Gray North Face Backpack",
-      location: "Gym Locker Room",
-      date: "May 14, 2023",
-      description:
-        "Gray North Face backpack with laptop, textbooks, and calculator inside.",
-      status: "Found",
-      image: null, // placeholder for image
-      category: "Accessories",
-    },
-    {
-      id: 5,
-      name: "AirPods Pro",
-      location: "Cafeteria",
-      date: "May 10, 2023",
-      description: "AirPods Pro in white case with small scratch on the back.",
-      status: "Found",
-      image: null, // placeholder for image
-      category: "Electronics",
-    },
-    {
-      id: 6,
-      name: "Psychology Textbook",
-      location: "Psychology Building",
-      date: "May 12, 2023",
-      description:
-        "Introduction to Psychology textbook with highlighted notes.",
-      status: "Missing",
-      image: null, // placeholder for image
-      category: "Books/Notes",
-    },
-  ];
+  // Debug log for items
+  useEffect(() => {
+    console.log("LostItems component:", {
+      allItemsLength: allItems?.length || 0,
+      lostItemsLength: lostItems?.length || 0,
+      allStatuses: Array.isArray(allItems)
+        ? [...new Set(allItems.map((item) => item.status))]
+        : [],
+      loading,
+      itemSample: allItems?.[0] || "No items available",
+    });
+  }, [allItems, lostItems, loading]);
 
   // Available categories
   const categories = [
@@ -136,9 +92,9 @@ const LostItems = () => {
   // Filter items based on search, category, and status
   const filteredItems = lostItems.filter((item) => {
     const matchesSearch =
-      item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.location.toLowerCase().includes(searchQuery.toLowerCase());
+      item.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.location?.toLowerCase().includes(searchQuery.toLowerCase());
 
     const matchesCategory =
       selectedCategory === "All Categories" ||
@@ -211,9 +167,9 @@ const LostItems = () => {
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1">
         {/* Main Content */}
-        <main className="flex-1 p-6 overflow-y-auto">
+        <main className="p-6 overflow-y-auto">
           <div className="max-w-7xl mx-auto">
             {" "}
             {/* Page Header */}
@@ -442,70 +398,88 @@ const LostItems = () => {
             <div className="mb-4 text-gray-500 text-sm">
               Showing {filteredItems.length} items
             </div>{" "}
+            {/* Loading State */}
+            {loading && (
+              <div className="text-center py-8">
+                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-800"></div>
+                <p className="mt-2 text-gray-600">Loading items...</p>
+              </div>
+            )}
             {/* Items Grid */}
-            <div
-              className={`grid ${
-                displayMode === "Grid"
-                  ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
-                  : "grid-cols-1 gap-4"
-              }`}
-            >
-              {filteredItems.map((item) => (
-                <div
-                  key={item.id}
-                  className="bg-white rounded-lg overflow-hidden shadow-sm flex flex-col"
-                >
-                  {/* Status Badge */}
-                  <div className="absolute top-2 right-2 z-10">
-                    <span
-                      className={`text-xs font-medium px-3 py-1 rounded-full ${
-                        item.status === "Missing"
-                          ? "bg-amber-100 text-amber-800"
-                          : "bg-green-100 text-green-800"
-                      }`}
-                    >
-                      {item.status}
-                    </span>
-                  </div>
-
-                  {/* Item Image Placeholder */}
-                  <div className="h-48 bg-gray-200 flex items-center justify-center">
-                    <span className="text-gray-400">Item Image</span>
-                  </div>
-
-                  {/* Item Details */}
-                  <div className="p-4 bg-black text-white flex-grow flex flex-col">
-                    <h3 className="text-lg font-medium mb-1">{item.name}</h3>
-
-                    <div className="flex items-center mt-1.5 text-gray-400">
-                      <MapPinIcon className="h-4 w-4 mr-1 flex-shrink-0" />
-                      <span className="text-sm truncate">{item.location}</span>
-                    </div>
-
-                    <div className="flex items-center mt-1 text-gray-400">
-                      <CalendarIcon className="h-4 w-4 mr-1 flex-shrink-0" />
-                      <span className="text-sm">{item.date}</span>
-                    </div>
-
-                    <p className="mt-2 text-sm text-gray-300 line-clamp-2 flex-grow">
-                      {item.description}
-                    </p>
-
-                    <div className="mt-3 flex justify-end">
-                      <Link
-                        to={`/item-details/${item.id}`}
-                        className="inline-block px-4 py-1.5 bg-gray-800 hover:bg-gray-700 rounded text-white text-sm"
+            {!loading && (
+              <div
+                className={`grid ${
+                  displayMode === "Grid"
+                    ? "grid-cols-1 md:grid-cols-3 gap-6"
+                    : "grid-cols-1 gap-4"
+                }`}
+              >
+                {filteredItems.map((item) => (
+                  <div
+                    key={item.id}
+                    className="bg-white rounded-lg overflow-hidden shadow-sm flex flex-col relative"
+                  >
+                    {/* Status Badge */}
+                    <div className="absolute top-2 right-2 z-10">
+                      <span
+                        className={`text-xs font-medium px-3 py-1 rounded-full ${
+                          item.status === "Missing"
+                            ? "bg-amber-100 text-amber-800"
+                            : "bg-green-100 text-green-800"
+                        }`}
                       >
-                        View Details
-                      </Link>
+                        {item.status}
+                      </span>
+                    </div>{" "}
+                    {/* Item Image Placeholder */}
+                    <div className="h-48 bg-gray-200 flex items-center justify-center w-full">
+                      {item.image ? (
+                        <img
+                          src={item.image}
+                          alt={item.name}
+                          crossOrigin="anonymous"
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <span className="text-gray-400">Item Image</span>
+                      )}
+                    </div>
+                    {/* Item Details */}
+                    <div className="p-4 bg-black text-white flex-grow flex flex-col w-full">
+                      <h3 className="text-lg font-medium mb-1">{item.name}</h3>
+
+                      <div className="flex items-center mt-1.5 text-gray-400">
+                        <MapPinIcon className="h-4 w-4 mr-1 flex-shrink-0" />
+                        <span className="text-sm truncate">
+                          {item.location}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center mt-1 text-gray-400">
+                        <CalendarIcon className="h-4 w-4 mr-1 flex-shrink-0" />
+                        <span className="text-sm">{item.date}</span>
+                      </div>
+
+                      <p className="mt-2 text-sm text-gray-300 line-clamp-2 flex-grow">
+                        {item.description}
+                      </p>
+
+                      <div className="mt-3 flex justify-end">
+                        <Link
+                          to={`/item-details/${item.id}`}
+                          className="inline-block px-4 py-1.5 bg-gray-800 hover:bg-gray-700 rounded text-white text-sm"
+                        >
+                          View Details
+                        </Link>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
             {/* Empty State */}
-            {filteredItems.length === 0 && (
-              <div className="text-center py-16 bg-white rounded-lg shadow-sm border border-gray-200">
+            {!loading && filteredItems.length === 0 && (
+              <div className="text-center py-16 bg-white rounded-lg shadow-sm border border-gray-200 w-full">
                 <MagnifyingGlassIcon className="h-12 w-12 text-gray-400 mx-auto" />
                 <h3 className="mt-2 text-lg font-medium text-gray-900">
                   No items found

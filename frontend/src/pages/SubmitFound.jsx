@@ -1,23 +1,36 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
-import { MapPinIcon } from "@heroicons/react/24/outline";
+import { Link, useNavigate } from "react-router-dom";
+import { MapPinIcon, ArrowUpTrayIcon } from "@heroicons/react/24/outline";
+import { useItems } from "../context/ItemsContext";
+import {
+  HomeIcon,
+  MagnifyingGlassIcon,
+  BellIcon,
+  UserIcon,
+} from "@heroicons/react/24/solid";
 
 /**
  * Submit Found Item page component
  * Allows users to submit details about items they found on campus
  */
 const SubmitFound = () => {
+  const { addFoundItem } = useItems();
+  const navigate = useNavigate();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formErrors, setFormErrors] = useState({});
+
   const [formData, setFormData] = useState({
-    itemName: "",
+    name: "",
     category: "",
-    dateFound: "",
-    locationFound: "",
+    date: new Date().toISOString().split("T")[0], // Default to today
+    location: "",
     description: "",
     turnInMethod: "office", // Default to office drop-off
-    image: null,
+    images: [],
   });
 
   const [previewImage, setPreviewImage] = useState(null);
+  const [isDragging, setIsDragging] = useState(false);
 
   // Categories for found items
   const categories = [
@@ -37,23 +50,69 @@ const SubmitFound = () => {
       ...prev,
       [name]: value,
     }));
+
+    if (formErrors[name]) {
+      setFormErrors((prev) => ({
+        ...prev,
+        [name]: null,
+      }));
+    }
+  };
+
+  // Handle drag events
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setIsDragging(false);
+
+    const file = e.dataTransfer.files[0];
+    if (file) {
+      validateAndSetImage(file);
+    }
+  };
+
+  // Validate and set image
+  const validateAndSetImage = (file) => {
+    if (file.size > 5 * 1024 * 1024) {
+      setFormErrors((prev) => ({
+        ...prev,
+        image: "File size must be less than 5MB",
+      }));
+      return;
+    }
+
+    if (!["image/jpeg", "image/jpg", "image/png"].includes(file.type)) {
+      setFormErrors((prev) => ({
+        ...prev,
+        image: "Only PNG, JPG formats are supported",
+      }));
+      return;
+    }
+
+    setFormData((prev) => ({
+      ...prev,
+      images: [file],
+    }));
+
+    const previewUrl = URL.createObjectURL(file);
+    setPreviewImage(previewUrl);
+    setFormErrors((prev) => ({ ...prev, image: null }));
   };
 
   // Handle image upload
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setFormData((prev) => ({
-        ...prev,
-        image: file,
-      }));
-
-      // Create preview URL
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPreviewImage(reader.result);
-      };
-      reader.readAsDataURL(file);
+      validateAndSetImage(file);
     }
   };
 
@@ -61,339 +120,272 @@ const SubmitFound = () => {
   const handleClearImage = () => {
     setFormData((prev) => ({
       ...prev,
-      image: null,
+      images: [],
     }));
+    if (previewImage) {
+      URL.revokeObjectURL(previewImage);
+    }
     setPreviewImage(null);
+  };
+
+  // Validate the form
+  const validateForm = () => {
+    const errors = {};
+    if (!formData.name.trim()) {
+      errors.name = "Item name is required";
+    }
+    if (!formData.category) {
+      errors.category = "Category is required";
+    }
+    if (!formData.date) {
+      errors.date = "Date is required";
+    }
+    if (!formData.location.trim()) {
+      errors.location = "Location is required";
+    }
+    if (!formData.description.trim()) {
+      errors.description = "Description is required";
+    }
+    if (!formData.turnInMethod) {
+      errors.turnInMethod =
+        "Please select how you would like to turn in the item";
+    }
+
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
   };
 
   // Handle form submission
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Submitting found item:", formData);
 
-    // Here you would typically call an API to submit the form data
-    // For now, just show an alert
-    alert(
-      "Thank you for submitting a found item! The information has been recorded."
-    );
+    if (!validateForm()) {
+      return;
+    }
 
-    // Reset form after submission
-    setFormData({
-      itemName: "",
-      category: "",
-      dateFound: "",
-      locationFound: "",
-      description: "",
-      turnInMethod: "office",
-      image: null,
-    });
-    setPreviewImage(null);
+    setIsSubmitting(true);
+    setIsSubmitting(true);
+    try {
+      const formattedData = {
+        ...formData,
+        date: new Date(formData.date).toISOString(),
+      };
+
+      const itemId = await addFoundItem(formattedData);
+      navigate(`/item-details/${itemId}`);
+    } catch (err) {
+      console.error("Failed to submit found item:", err);
+      setFormErrors((prev) => ({
+        ...prev,
+        submit:
+          err.message || "Failed to submit your report. Please try again.",
+      }));
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
+  // Navigation items for sidebar
+  const navigation = [
+    { name: "Dashboard", href: "/dashboard", icon: HomeIcon },
+    { name: "Lost Items", href: "/lost-items", icon: MagnifyingGlassIcon },
+    { name: "Report Missing", href: "/report-missing", icon: BellIcon },
+    {
+      name: "Submit Found",
+      href: "/submit-found",
+      icon: MapPinIcon,
+      active: true,
+    },
+    { name: "My Items", href: "/my-items", icon: UserIcon },
+  ];
+
   return (
-    <div className="flex min-h-screen bg-white">
+    <div className="flex min-h-screen bg-gray-100">
       {/* Left Sidebar Navigation */}
-      <div className="w-64 bg-white border-r border-gray-200 flex flex-col">
-        <div className="flex items-center p-4">
-          <span className="text-lg font-medium">Dashboard</span>
+      <div className="w-64 bg-white border-r border-gray-200 flex flex-col h-screen">
+        <div className="flex items-center p-4 border-b">
+          <Link to="/">
+            <span className="text-lg font-semibold">Dashboard</span>
+          </Link>
         </div>
-        <nav className="flex-1 px-4 py-2 space-y-1">
-          <Link
-            to="/dashboard"
-            className="flex items-center p-3 text-gray-600 hover:text-gray-800"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5 mr-3"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-            >
-              <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
-            </svg>
-            <span>Dashboard</span>
-          </Link>
-
-          <Link
-            to="/lost-items"
-            className="flex items-center p-3 text-gray-600 hover:text-gray-800"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5 mr-3"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-              />
-            </svg>
-            <span>Lost Items</span>
-          </Link>
-
-          <Link
-            to="/report-missing"
-            className="flex items-center p-3 text-gray-600 hover:text-gray-800"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5 mr-3"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
-              />
-            </svg>
-            <span>Report Missing</span>
-          </Link>
-
-          <Link
-            to="/submit-found"
-            className="flex items-center p-3 text-blue-600"
-          >
-            <MapPinIcon className="h-5 w-5 mr-3" />
-            <span>Submit Found</span>
-          </Link>
-
-          <Link
-            to="/my-items"
-            className="flex items-center p-3 text-gray-600 hover:text-gray-800"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5 mr-3"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-              />
-            </svg>
-            <span>My Items</span>
-          </Link>
+        <nav className="p-4 space-y-1 flex-grow">
+          {navigation.map((item) => {
+            const Icon = item.icon;
+            return (
+              <Link
+                key={item.name}
+                to={item.href}
+                className={`flex items-center p-3 rounded-md ${
+                  item.active
+                    ? "text-blue-600"
+                    : "text-gray-600 hover:text-gray-800"
+                }`}
+              >
+                <Icon className="h-5 w-5 mr-3" />
+                <span className="text-sm font-medium">{item.name}</span>
+              </Link>
+            );
+          })}
         </nav>
-        <div className="p-4 border-t">
-          <button className="flex items-center p-2 text-red-600 w-full">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5 mr-3"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-              />
-            </svg>
-            <span>Log Out</span>
-          </button>
-        </div>
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col">
-        {/* Top Header with Location and Profile */}
-        <header className="bg-white border-b border-gray-200 py-3 px-6">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center space-x-4">
-              <Link
-                to="/"
-                className="flex items-center text-blue-600 hover:text-blue-800"
-              >
-                <MapPinIcon className="h-5 w-5 mr-1" />
-                <span>Location</span>
-              </Link>
-              <Link
-                to="/campus-map"
-                className="text-gray-600 hover:text-gray-800"
-              >
-                Campus Map
-              </Link>
-              <Link
-                to="/locations"
-                className="text-gray-600 hover:text-gray-800"
-              >
-                Locations
-              </Link>
-            </div>
-            <div className="flex items-center space-x-4">
-              <Link
-                to="/notifications"
-                className="text-gray-600 hover:text-gray-800"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
-                  />
-                </svg>
-              </Link>
-              <Link
-                to="/profile"
-                className="flex items-center text-gray-600 hover:text-gray-800"
-              >
-                <div className="bg-gray-800 text-white rounded-full h-8 w-8 flex items-center justify-center mr-2">
-                  <span className="text-sm font-medium">JW</span>
-                </div>
-                <span>Profile</span>
-              </Link>
-            </div>
+      <div className="flex-1 overflow-auto">
+        <div className="max-w-4xl mx-auto p-6">
+          <div className="mb-6">
+            <h2 className="text-2xl font-semibold text-gray-700">
+              Submit Found Item
+            </h2>
+            <p className="text-gray-500 mt-1">
+              Thank you for helping return lost items to their owners. Please
+              provide details about the item you found.
+            </p>
           </div>
-        </header>
 
-        {/* Main Form Content */}
-        <main className="flex-1 p-6 bg-gray-50">
-          <div className="max-w-4xl mx-auto">
-            {/* Introduction Text */}
-            <div className="mb-8 text-center">
-              <h2 className="text-2xl font-bold text-gray-800">
-                Found Item Details
-              </h2>
-              <p className="text-gray-600 mt-2">
-                Thank you for helping return lost items to their owners. Please
-                provide all relevant information about the item you found.
-              </p>
-            </div>
-
-            {/* Found Item Form */}
-            <form
-              onSubmit={handleSubmit}
-              className="bg-black text-white rounded-lg p-8"
-            >
-              <h3 className="text-xl font-semibold mb-6">Found Item Details</h3>
-              <p className="text-gray-400 mb-8">
+          <div className="bg-black text-white rounded-lg shadow-lg overflow-hidden">
+            <div className="p-6">
+              <h3 className="text-xl font-semibold mb-4">Found Item Details</h3>
+              <p className="text-gray-400 mb-6">
                 Please provide all relevant information about the item you
                 found.
               </p>
 
-              <div className="space-y-6">
-                {/* Item Name */}
-                <div>
-                  <label
-                    htmlFor="itemName"
-                    className="block text-sm font-medium mb-2"
-                  >
-                    Item Name
-                  </label>
-                  <input
-                    type="text"
-                    id="itemName"
-                    name="itemName"
-                    value={formData.itemName}
-                    onChange={handleChange}
-                    placeholder="e.g. Silver Watch"
-                    className="w-full bg-gray-900 border-gray-700 rounded-md p-3 text-white placeholder-gray-500"
-                    required
-                  />
-                </div>
-
-                {/* Item Category */}
-                <div>
-                  <label
-                    htmlFor="category"
-                    className="block text-sm font-medium mb-2"
-                  >
-                    Category
-                  </label>
-                  <div className="relative">
-                    <select
-                      id="category"
-                      name="category"
-                      value={formData.category}
-                      onChange={handleChange}
-                      className="w-full bg-gray-900 border-gray-700 rounded-md p-3 text-white appearance-none"
-                      required
+              <form onSubmit={handleSubmit}>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                  {/* Item Name */}
+                  <div>
+                    <label
+                      htmlFor="name"
+                      className="block text-sm font-medium mb-2"
                     >
-                      <option value="">Select a category</option>
-                      {categories.map((category) => (
-                        <option key={category} value={category}>
-                          {category}
-                        </option>
-                      ))}
-                    </select>
-                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-400">
-                      <svg
-                        className="h-5 w-5"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
+                      Item Name
+                    </label>
+                    <input
+                      type="text"
+                      id="name"
+                      name="name"
+                      value={formData.name}
+                      onChange={handleChange}
+                      placeholder="e.g. Silver Watch"
+                      className={`w-full bg-gray-900 border ${
+                        formErrors.name ? "border-red-500" : "border-gray-700"
+                      } rounded-md p-3 text-white placeholder-gray-500`}
+                    />
+                    {formErrors.name && (
+                      <p className="mt-1 text-sm text-red-500">
+                        {formErrors.name}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Item Category */}
+                  <div>
+                    <label
+                      htmlFor="category"
+                      className="block text-sm font-medium mb-2"
+                    >
+                      Category
+                    </label>
+                    <div className="relative">
+                      <select
+                        id="category"
+                        name="category"
+                        value={formData.category}
+                        onChange={handleChange}
+                        className={`w-full bg-gray-900 border ${
+                          formErrors.category
+                            ? "border-red-500"
+                            : "border-gray-700"
+                        } rounded-md p-3 text-white appearance-none`}
                       >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M19 9l-7 7-7-7"
-                        />
-                      </svg>
+                        <option value="">Select a category</option>
+                        {categories.map((category) => (
+                          <option key={category} value={category}>
+                            {category}
+                          </option>
+                        ))}
+                      </select>
+                      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-400">
+                        <svg
+                          className="h-5 w-5"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M19 9l-7 7-7-7"
+                          />
+                        </svg>
+                      </div>
+                      {formErrors.category && (
+                        <p className="mt-1 text-sm text-red-500">
+                          {formErrors.category}
+                        </p>
+                      )}
                     </div>
                   </div>
                 </div>
 
-                {/* Date and Location (Two Columns) */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                  {/* Date Found */}
                   <div>
                     <label
-                      htmlFor="dateFound"
+                      htmlFor="date"
                       className="block text-sm font-medium mb-2"
                     >
                       Date Found
                     </label>
                     <input
                       type="date"
-                      id="dateFound"
-                      name="dateFound"
-                      value={formData.dateFound}
+                      id="date"
+                      name="date"
+                      value={formData.date}
                       onChange={handleChange}
-                      className="w-full bg-gray-900 border-gray-700 rounded-md p-3 text-white"
-                      required
+                      className={`w-full bg-gray-900 border ${
+                        formErrors.date ? "border-red-500" : "border-gray-700"
+                      } rounded-md p-3 text-white`}
                     />
+                    {formErrors.date && (
+                      <p className="mt-1 text-sm text-red-500">
+                        {formErrors.date}
+                      </p>
+                    )}
                   </div>
 
+                  {/* Location Found */}
                   <div>
                     <label
-                      htmlFor="locationFound"
+                      htmlFor="location"
                       className="block text-sm font-medium mb-2"
                     >
                       Location Found
                     </label>
                     <input
                       type="text"
-                      id="locationFound"
-                      name="locationFound"
-                      value={formData.locationFound}
+                      id="location"
+                      name="location"
+                      value={formData.location}
                       onChange={handleChange}
                       placeholder="e.g. Cafeteria, Table 12"
-                      className="w-full bg-gray-900 border-gray-700 rounded-md p-3 text-white placeholder-gray-500"
-                      required
+                      className={`w-full bg-gray-900 border ${
+                        formErrors.location
+                          ? "border-red-500"
+                          : "border-gray-700"
+                      } rounded-md p-3 text-white placeholder-gray-500`}
                     />
+                    {formErrors.location && (
+                      <p className="mt-1 text-sm text-red-500">
+                        {formErrors.location}
+                      </p>
+                    )}
                   </div>
                 </div>
 
-                {/* Item Description */}
-                <div>
+                {/* Description */}
+                <div className="mb-6">
                   <label
                     htmlFor="description"
                     className="block text-sm font-medium mb-2"
@@ -403,154 +395,162 @@ const SubmitFound = () => {
                   <textarea
                     id="description"
                     name="description"
+                    rows={4}
                     value={formData.description}
                     onChange={handleChange}
                     placeholder="Provide a detailed description (color, brand, distinctive features, visible content, etc.)"
-                    rows={5}
-                    className="w-full bg-gray-900 border-gray-700 rounded-md p-3 text-white placeholder-gray-500"
-                    required
+                    className={`w-full bg-gray-900 border ${
+                      formErrors.description
+                        ? "border-red-500"
+                        : "border-gray-700"
+                    } rounded-md p-3 text-white placeholder-gray-500`}
                   />
-                  <p className="text-sm text-gray-400 mt-2">
-                    Please include enough detail to help identify the true
-                    owner, but avoid including sensitive information.
-                  </p>
+                  {formErrors.description && (
+                    <p className="mt-1 text-sm text-red-500">
+                      {formErrors.description}
+                    </p>
+                  )}
                 </div>
 
                 {/* Image Upload */}
-                <div>
-                  <label
-                    htmlFor="image"
-                    className="block text-sm font-medium mb-2"
-                  >
+                <div className="mb-6">
+                  <label className="block text-sm font-medium mb-2">
                     Upload Image (Optional)
                   </label>
-                  <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-700 border-dashed rounded-md">
-                    {previewImage ? (
-                      <div className="space-y-2 text-center">
-                        <img
-                          src={previewImage}
-                          alt="Preview"
-                          className="mx-auto h-32 object-cover"
-                        />
-                        <button
-                          type="button"
-                          onClick={handleClearImage}
-                          className="px-3 py-1 text-sm text-red-500 hover:text-red-400"
-                        >
-                          Remove
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="space-y-1 text-center">
-                        <svg
-                          className="mx-auto h-12 w-12 text-gray-400"
-                          stroke="currentColor"
-                          fill="none"
-                          viewBox="0 0 48 48"
-                          aria-hidden="true"
-                        >
-                          <path
-                            d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
-                            strokeWidth={2}
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
+                  <div
+                    onDragOver={handleDragOver}
+                    onDragLeave={handleDragLeave}
+                    onDrop={handleDrop}
+                    className={`relative border-2 border-dashed ${
+                      formErrors.image
+                        ? "border-red-500"
+                        : isDragging
+                        ? "border-white bg-white/10"
+                        : "border-gray-700 hover:border-white hover:bg-white/5"
+                    } rounded-md transition-all duration-200 group cursor-pointer h-[200px] flex items-center justify-center`}
+                  >
+                    <div
+                      className={`p-6 w-full ${previewImage ? "h-full" : ""}`}
+                    >
+                      {previewImage ? (
+                        <div className="relative h-full flex items-center justify-center">
+                          <img
+                            src={previewImage}
+                            alt="Item preview"
+                            className="max-h-full w-auto max-w-full object-contain rounded"
                           />
-                        </svg>
-                        <div className="flex text-sm text-gray-400">
-                          <label
-                            htmlFor="imageUpload"
-                            className="relative cursor-pointer rounded-md font-medium text-blue-500 hover:text-blue-400"
+                          <button
+                            type="button"
+                            onClick={handleClearImage}
+                            className="absolute top-2 right-2 bg-black/50 hover:bg-black/70 rounded-full p-1.5 text-white transition-colors"
                           >
-                            <span>Click to upload</span>
-                            <input
-                              id="imageUpload"
-                              name="imageUpload"
-                              type="file"
-                              accept="image/png, image/jpeg"
-                              onChange={handleImageUpload}
-                              className="sr-only"
-                            />
-                          </label>
-                          <p className="pl-1">or drag and drop</p>
+                            <svg
+                              className="h-4 w-4"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M6 18L18 6M6 6l12 12"
+                              />
+                            </svg>
+                          </button>
                         </div>
-                        <p className="text-xs text-gray-400">
-                          PNG, JPG up to 5MB
-                        </p>
-                      </div>
-                    )}
+                      ) : (
+                        <div className="text-center relative">
+                          <ArrowUpTrayIcon className="h-12 w-12 text-gray-500 mx-auto mb-3 group-hover:text-white transition-colors" />
+                          <p className="text-gray-400 group-hover:text-white transition-colors">
+                            <span className="font-medium">Click to upload</span>{" "}
+                            or drag and drop
+                          </p>
+                          <p className="text-gray-500 text-sm mt-2 group-hover:text-gray-300 transition-colors">
+                            PNG, JPG up to 5MB
+                          </p>
+                          <input
+                            type="file"
+                            accept="image/png,image/jpeg,image/jpg"
+                            onChange={handleImageUpload}
+                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                            aria-label="Upload image"
+                          />
+                        </div>
+                      )}
+                    </div>
                   </div>
+                  {formErrors.image && (
+                    <p className="mt-1 text-sm text-red-500">
+                      {formErrors.image}
+                    </p>
+                  )}
                 </div>
 
-                {/* Turn-In Method */}
-                <div>
+                {/* Turn-in Method */}
+                <div className="mb-6">
                   <label className="block text-sm font-medium mb-2">
                     How would you like to turn in this item?
                   </label>
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     <div className="flex items-center">
                       <input
                         id="office"
-                        name="turnInMethod"
                         type="radio"
+                        name="turnInMethod"
                         value="office"
                         checked={formData.turnInMethod === "office"}
                         onChange={handleChange}
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-600"
+                        className="h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500"
                       />
-                      <label htmlFor="office" className="ml-3 block text-sm">
+                      <label
+                        htmlFor="office"
+                        className="ml-2 block text-sm text-gray-300"
+                      >
                         I will drop it off at the campus lost and found office
                       </label>
                     </div>
                     <div className="flex items-center">
                       <input
-                        id="keepUntilClaimed"
-                        name="turnInMethod"
+                        id="keep"
                         type="radio"
-                        value="keepUntilClaimed"
-                        checked={formData.turnInMethod === "keepUntilClaimed"}
+                        name="turnInMethod"
+                        value="keep"
+                        checked={formData.turnInMethod === "keep"}
                         onChange={handleChange}
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-600"
+                        className="h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500"
                       />
                       <label
-                        htmlFor="keepUntilClaimed"
-                        className="ml-3 block text-sm"
+                        htmlFor="keep"
+                        className="ml-2 block text-sm text-gray-300"
                       >
-                        I will keep it until the owner contacts me
-                      </label>
-                    </div>
-                    <div className="flex items-center">
-                      <input
-                        id="alreadySubmitted"
-                        name="turnInMethod"
-                        type="radio"
-                        value="alreadySubmitted"
-                        checked={formData.turnInMethod === "alreadySubmitted"}
-                        onChange={handleChange}
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-600"
-                      />
-                      <label
-                        htmlFor="alreadySubmitted"
-                        className="ml-3 block text-sm"
-                      >
-                        I already submitted it to lost and found
+                        I'm holding onto it until the owner is found
                       </label>
                     </div>
                   </div>
+                  {formErrors.turnInMethod && (
+                    <p className="mt-1 text-sm text-red-500">
+                      {formErrors.turnInMethod}
+                    </p>
+                  )}
                 </div>
-              </div>
 
-              {/* Submit Button */}
-              <div className="mt-8 text-right">
-                <button
-                  type="submit"
-                  className="inline-flex justify-center py-2 px-6 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                >
-                  Submit Report
-                </button>
-              </div>
-            </form>
+                {/* Submit Button */}
+                <div className="flex justify-end">
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className={`px-6 py-3 bg-white text-black rounded-md hover:bg-gray-200 transition ${
+                      isSubmitting ? "opacity-50 cursor-not-allowed" : ""
+                    }`}
+                  >
+                    {isSubmitting ? "Submitting..." : "Submit Found Item"}
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
-        </main>
+        </div>
       </div>
     </div>
   );

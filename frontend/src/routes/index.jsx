@@ -9,6 +9,7 @@ import LostItems from "../pages/LostItems";
 import ReportMissing from "../pages/ReportMissing";
 import SubmitFound from "../pages/SubmitFound";
 import MyItems from "../pages/MyItems";
+import ProfilePage from "../pages/ProfilePage";
 import { ProtectedRoute, PublicRoute } from "../components/layout/RouteGuards";
 
 /**
@@ -33,6 +34,14 @@ const routes = [
     element: (
       <ProtectedRoute>
         <Dashboard />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/profile",
+    element: (
+      <ProtectedRoute>
+        <ProfilePage />
       </ProtectedRoute>
     ),
   },

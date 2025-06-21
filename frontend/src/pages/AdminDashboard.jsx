@@ -58,6 +58,18 @@ const AdminDashboard = () => {
   const [selectedItems, setSelectedItems] = useState([]);
   const [showFilters, setShowFilters] = useState(false);
 
+  // User management state
+  const [allUsers, setAllUsers] = useState([]);
+  const [userSearchTerm, setUserSearchTerm] = useState("");
+  const [userFilterRole, setUserFilterRole] = useState("all");
+  const [userFilterStatus, setUserFilterStatus] = useState("all");
+  const [userSortBy, setUserSortBy] = useState("createdAt");
+  const [userSortOrder, setUserSortOrder] = useState("desc");
+  const [userCurrentPage, setUserCurrentPage] = useState(1);
+  const [usersPerPage, setUsersPerPage] = useState(10);
+  const [selectedUsers, setSelectedUsers] = useState([]);
+  const [showUserFilters, setShowUserFilters] = useState(false);
+
   // Load admin data
   useEffect(() => {
     const loadAdminData = async () => {
@@ -129,6 +141,7 @@ const AdminDashboard = () => {
         const usersResult = await adminService.getAllUsers();
         if (usersResult.success) {
           const users = usersResult.data.data || usersResult.data;
+          setAllUsers(users);
           setStats((prev) => ({
             ...prev,
             activeUsers: users.length,
@@ -417,6 +430,156 @@ const AdminDashboard = () => {
         alert("Failed to delete items");
       }
     }
+  };
+
+  // Helper functions for User Management functionality
+  const filteredUsers = allUsers
+    .filter((user) => {
+      const matchesSearch =
+        user.username?.toLowerCase().includes(userSearchTerm.toLowerCase()) ||
+        user.email?.toLowerCase().includes(userSearchTerm.toLowerCase()) ||
+        user.firstName?.toLowerCase().includes(userSearchTerm.toLowerCase()) ||
+        user.lastName?.toLowerCase().includes(userSearchTerm.toLowerCase());
+
+      const matchesRole =
+        userFilterRole === "all" || user.role === userFilterRole;
+      const matchesStatus =
+        userFilterStatus === "all" ||
+        (userFilterStatus === "active" && user.isActive !== false) ||
+        (userFilterStatus === "inactive" && user.isActive === false);
+
+      return matchesSearch && matchesRole && matchesStatus;
+    })
+    .sort((a, b) => {
+      let aValue, bValue;
+
+      switch (userSortBy) {
+        case "username":
+          aValue = a.username?.toLowerCase() || "";
+          bValue = b.username?.toLowerCase() || "";
+          break;
+        case "email":
+          aValue = a.email?.toLowerCase() || "";
+          bValue = b.email?.toLowerCase() || "";
+          break;
+        case "role":
+          aValue = a.role || "";
+          bValue = b.role || "";
+          break;
+        case "lastLogin":
+          aValue = new Date(a.lastLogin || 0);
+          bValue = new Date(b.lastLogin || 0);
+          break;
+        default:
+          aValue = new Date(a.createdAt || 0);
+          bValue = new Date(b.createdAt || 0);
+      }
+
+      if (userSortOrder === "asc") {
+        return aValue > bValue ? 1 : -1;
+      } else {
+        return aValue < bValue ? 1 : -1;
+      }
+    });
+
+  const userTotalPages = Math.ceil(filteredUsers.length / usersPerPage);
+  const paginatedUsers = filteredUsers.slice(
+    (userCurrentPage - 1) * usersPerPage,
+    userCurrentPage * usersPerPage
+  );
+
+  const toggleSelectUser = (userId) => {
+    setSelectedUsers((prev) =>
+      prev.includes(userId)
+        ? prev.filter((id) => id !== userId)
+        : [...prev, userId]
+    );
+  };
+
+  const toggleSelectAllUsers = () => {
+    if (selectedUsers.length === filteredUsers.length) {
+      setSelectedUsers([]);
+    } else {
+      setSelectedUsers(filteredUsers.map((user) => user._id));
+    }
+  };
+
+  const clearUserFilters = () => {
+    setUserSearchTerm("");
+    setUserFilterRole("all");
+    setUserFilterStatus("all");
+    setUserSortBy("createdAt");
+    setUserSortOrder("desc");
+    setUserCurrentPage(1);
+  };
+
+  const exportUserData = () => {
+    const csvContent =
+      "data:text/csv;charset=utf-8," +
+      "Username,Email,First Name,Last Name,Role,Status,Created Date,Last Login\n" +
+      filteredUsers
+        .map(
+          (user) =>
+            `"${user.username || ""}","${user.email || ""}","${
+              user.firstName || ""
+            }","${user.lastName || ""}","${user.role || "user"}","${
+              user.isActive !== false ? "Active" : "Inactive"
+            }","${new Date(user.createdAt).toLocaleDateString()}","${
+              user.lastLogin
+                ? new Date(user.lastLogin).toLocaleDateString()
+                : "Never"
+            }"`
+        )
+        .join("\n");
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute(
+      "download",
+      `campus_find_users_${new Date().toISOString().split("T")[0]}.csv`
+    );
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleEditUser = (user) => {
+    console.log("Edit user:", user);
+    alert("Edit user functionality will be implemented in a future update");
+  };
+
+  const handleDeleteUser = async (userId) => {
+    if (
+      window.confirm(
+        "Are you sure you want to delete this user? This action cannot be undone."
+      )
+    ) {
+      try {
+        const result = await adminService.deleteUser(userId);
+        if (result.success) {
+          setAllUsers((prev) => prev.filter((user) => user._id !== userId));
+          setSelectedUsers((prev) => prev.filter((id) => id !== userId));
+          alert("User deleted successfully");
+        } else {
+          alert("Failed to delete user: " + result.error);
+        }
+      } catch (error) {
+        console.error("Error deleting user:", error);
+        alert("Failed to delete user");
+      }
+    }
+  };
+
+  const handleViewUser = (user) => {
+    console.log("View user:", user);
+    alert(
+      `User Details:\n\nUsername: ${user.username}\nEmail: ${
+        user.email
+      }\nRole: ${user.role}\nStatus: ${
+        user.isActive !== false ? "Active" : "Inactive"
+      }\nJoined: ${new Date(user.createdAt).toLocaleDateString()}`
+    );
   };
 
   const chartOptions = {
@@ -1034,25 +1197,22 @@ const AdminDashboard = () => {
                               <div className="flex space-x-2">
                                 <button
                                   onClick={() => handleApproveItem(item.id)}
-                                  className="flex items-center px-3 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700"
+                                  className="px-3 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700"
                                 >
-                                  <CheckIcon className="h-3 w-3 mr-1" />
                                   Approve
                                 </button>
                                 <button
                                   onClick={() => handleRejectItem(item.id)}
-                                  className="flex items-center px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700"
+                                  className="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700"
                                 >
-                                  <XMarkIcon className="h-3 w-3 mr-1" />
                                   Reject
                                 </button>
                                 <button
                                   onClick={() =>
                                     handleViewItem(item.originalItem)
                                   }
-                                  className="flex items-center px-3 py-1 text-xs bg-gray-600 text-white rounded hover:bg-gray-700"
+                                  className="px-3 py-1 text-xs bg-gray-600 text-white rounded hover:bg-gray-700"
                                 >
-                                  <EyeIcon className="h-3 w-3 mr-1" />
                                   View
                                 </button>
                               </div>
@@ -1519,12 +1679,575 @@ const AdminDashboard = () => {
               )}
             </div>
           )}
-          {activeTab === "settings" && (
-            <div className="bg-white rounded-lg shadow p-6">
-              <h3 className="text-lg font-medium mb-4">System Settings</h3>
-              <p className="text-gray-600">
-                System settings will be implemented here.
-              </p>
+          {activeTab === "users" && (
+            <div className="space-y-6">
+              {/* Header Section */}
+              <div className="bg-white rounded-lg shadow p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h3 className="text-lg font-medium text-gray-900">
+                      User Management
+                    </h3>
+                    <p className="text-sm text-gray-600">
+                      Manage all users, roles, and permissions in the system
+                    </p>
+                  </div>
+                  <div className="flex space-x-3">
+                    <div className="relative">
+                      <input
+                        type="text"
+                        placeholder="Search users..."
+                        value={userSearchTerm}
+                        onChange={(e) => setUserSearchTerm(e.target.value)}
+                        className="pl-10 pr-4 py-2 border border-gray-300 rounded-md text-sm w-64"
+                      />
+                      <svg
+                        className="absolute left-3 top-2.5 h-4 w-4 text-gray-400"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                        />
+                      </svg>
+                    </div>
+                    <select
+                      value={userFilterRole}
+                      onChange={(e) => setUserFilterRole(e.target.value)}
+                      className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+                    >
+                      <option value="all">All Roles</option>
+                      <option value="user">User</option>
+                      <option value="admin">Admin</option>
+                      <option value="moderator">Moderator</option>
+                    </select>
+                    <select
+                      value={userFilterStatus}
+                      onChange={(e) => setUserFilterStatus(e.target.value)}
+                      className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+                    >
+                      <option value="all">All Status</option>
+                      <option value="active">Active</option>
+                      <option value="inactive">Inactive</option>
+                    </select>
+                    <button
+                      onClick={() => setShowUserFilters(!showUserFilters)}
+                      className="px-4 py-2 bg-gray-100 text-gray-700 text-sm rounded-md hover:bg-gray-200"
+                    >
+                      {showUserFilters ? "Hide Filters" : "Show Filters"}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Quick Stats */}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <div className="flex items-center">
+                      <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center mr-3">
+                        <span className="text-white text-sm font-medium">
+                          {filteredUsers.length}
+                        </span>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-blue-800">
+                          Total Users
+                        </p>
+                        <p className="text-xs text-blue-600">
+                          Registered accounts
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                    <div className="flex items-center">
+                      <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center mr-3">
+                        <span className="text-white text-sm font-medium">
+                          {
+                            filteredUsers.filter(
+                              (user) => user.isActive !== false
+                            ).length
+                          }
+                        </span>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-green-800">
+                          Active Users
+                        </p>
+                        <p className="text-xs text-green-600">
+                          Currently active
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                    <div className="flex items-center">
+                      <div className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center mr-3">
+                        <span className="text-white text-sm font-medium">
+                          {
+                            filteredUsers.filter(
+                              (user) => user.role === "admin"
+                            ).length
+                          }
+                        </span>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-purple-800">
+                          Administrators
+                        </p>
+                        <p className="text-xs text-purple-600">
+                          Admin accounts
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                    <div className="flex items-center">
+                      <div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center mr-3">
+                        <span className="text-white text-sm font-medium">
+                          {
+                            filteredUsers.filter((user) => user.role === "user")
+                              .length
+                          }
+                        </span>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-yellow-800">
+                          Regular Users
+                        </p>
+                        <p className="text-xs text-yellow-600">
+                          Standard accounts
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Advanced Filters */}
+                {showUserFilters && (
+                  <div className="bg-gray-50 rounded-lg p-4 mb-6">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Sort By
+                        </label>
+                        <select
+                          value={userSortBy}
+                          onChange={(e) => setUserSortBy(e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                        >
+                          <option value="createdAt">Join Date</option>
+                          <option value="username">Username</option>
+                          <option value="email">Email</option>
+                          <option value="role">Role</option>
+                          <option value="lastLogin">Last Login</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Order
+                        </label>
+                        <select
+                          value={userSortOrder}
+                          onChange={(e) => setUserSortOrder(e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                        >
+                          <option value="desc">Newest First</option>
+                          <option value="asc">Oldest First</option>
+                        </select>
+                      </div>
+                      <div className="flex items-end">
+                        <div className="flex space-x-2 w-full">
+                          <button
+                            onClick={clearUserFilters}
+                            className="px-4 py-2 bg-gray-200 text-gray-700 text-sm rounded-md hover:bg-gray-300 flex-1"
+                          >
+                            Clear Filters
+                          </button>
+                          <button
+                            onClick={exportUserData}
+                            className="px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 flex-1"
+                          >
+                            Export Data
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Users Table */}
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="text-left py-3 px-4 font-medium text-gray-600">
+                          <input
+                            type="checkbox"
+                            checked={
+                              selectedUsers.length === filteredUsers.length &&
+                              filteredUsers.length > 0
+                            }
+                            onChange={toggleSelectAllUsers}
+                            className="rounded border-gray-300"
+                          />
+                        </th>
+                        <th className="text-left py-3 px-4 font-medium text-gray-600">
+                          User
+                        </th>
+                        <th className="text-left py-3 px-4 font-medium text-gray-600">
+                          Role
+                        </th>
+                        <th className="text-left py-3 px-4 font-medium text-gray-600">
+                          Status
+                        </th>
+                        <th className="text-left py-3 px-4 font-medium text-gray-600">
+                          Joined
+                        </th>
+                        <th className="text-left py-3 px-4 font-medium text-gray-600">
+                          Last Login
+                        </th>
+                        <th className="text-left py-3 px-4 font-medium text-gray-600">
+                          Actions
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200">
+                      {paginatedUsers.length > 0 ? (
+                        paginatedUsers.map((user) => (
+                          <tr key={user._id} className="hover:bg-gray-50">
+                            <td className="py-3 px-4">
+                              <input
+                                type="checkbox"
+                                checked={selectedUsers.includes(user._id)}
+                                onChange={() => toggleSelectUser(user._id)}
+                                className="rounded border-gray-300"
+                              />
+                            </td>
+                            <td className="py-3 px-4">
+                              <div className="flex items-center">
+                                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mr-3">
+                                  <span className="text-white font-medium text-sm">
+                                    {(
+                                      user.firstName?.[0] ||
+                                      user.username?.[0] ||
+                                      user.email?.[0] ||
+                                      "?"
+                                    ).toUpperCase()}
+                                  </span>
+                                </div>
+                                <div>
+                                  <div className="font-medium text-gray-900">
+                                    {user.firstName && user.lastName
+                                      ? `${user.firstName} ${user.lastName}`
+                                      : user.username || "Unknown"}
+                                  </div>
+                                  <div className="text-gray-500 text-xs">
+                                    {user.email}
+                                  </div>
+                                </div>
+                              </div>
+                            </td>
+                            <td className="py-3 px-4">
+                              <span
+                                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                  user.role === "admin"
+                                    ? "bg-red-100 text-red-800"
+                                    : user.role === "moderator"
+                                    ? "bg-yellow-100 text-yellow-800"
+                                    : "bg-green-100 text-green-800"
+                                }`}
+                              >
+                                {user.role || "user"}
+                              </span>
+                            </td>
+                            <td className="py-3 px-4">
+                              <span
+                                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                  user.isActive !== false
+                                    ? "bg-green-100 text-green-800"
+                                    : "bg-gray-100 text-gray-800"
+                                }`}
+                              >
+                                {user.isActive !== false
+                                  ? "Active"
+                                  : "Inactive"}
+                              </span>
+                            </td>
+                            <td className="py-3 px-4 text-gray-600">
+                              {new Date(user.createdAt).toLocaleDateString()}
+                            </td>
+                            <td className="py-3 px-4 text-gray-600">
+                              {user.lastLogin
+                                ? new Date(user.lastLogin).toLocaleDateString()
+                                : "Never"}
+                            </td>
+                            <td className="py-3 px-4">
+                              <div className="flex space-x-2">
+                                <button
+                                  onClick={() => handleViewUser(user)}
+                                  className="text-blue-600 hover:text-blue-700 text-xs font-medium"
+                                >
+                                  View
+                                </button>
+                                <button
+                                  onClick={() => handleEditUser(user)}
+                                  className="text-green-600 hover:text-green-700 text-xs font-medium"
+                                >
+                                  Edit
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteUser(user._id)}
+                                  className="text-red-600 hover:text-red-700 text-xs font-medium"
+                                  disabled={user._id === user._id}
+                                >
+                                  Delete
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan="7" className="py-12 px-4 text-center">
+                            <div className="text-gray-500">
+                              <UsersIcon className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                              <p className="text-lg font-medium">
+                                No users found
+                              </p>
+                              <p className="text-sm">
+                                No users match your current filter criteria
+                              </p>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Pagination */}
+                <div className="flex items-center justify-between mt-6">
+                  <div className="flex items-center space-x-2">
+                    <span className="text-sm text-gray-700">
+                      Showing{" "}
+                      {Math.min(
+                        (userCurrentPage - 1) * usersPerPage + 1,
+                        filteredUsers.length
+                      )}{" "}
+                      to{" "}
+                      {Math.min(
+                        userCurrentPage * usersPerPage,
+                        filteredUsers.length
+                      )}{" "}
+                      of {filteredUsers.length} users
+                    </span>
+                    <select
+                      value={usersPerPage}
+                      onChange={(e) => {
+                        setUsersPerPage(Number(e.target.value));
+                        setUserCurrentPage(1);
+                      }}
+                      className="px-2 py-1 border border-gray-300 rounded text-sm"
+                    >
+                      <option value={10}>10 per page</option>
+                      <option value={25}>25 per page</option>
+                      <option value={50}>50 per page</option>
+                      <option value={100}>100 per page</option>
+                    </select>
+                  </div>
+                  <div className="flex space-x-1">
+                    <button
+                      onClick={() =>
+                        setUserCurrentPage(Math.max(1, userCurrentPage - 1))
+                      }
+                      disabled={userCurrentPage === 1}
+                      className="px-3 py-1 border border-gray-300 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                    >
+                      Previous
+                    </button>
+                    {[...Array(Math.min(5, userTotalPages))].map((_, i) => {
+                      const pageNum = Math.max(
+                        1,
+                        Math.min(userTotalPages, userCurrentPage - 2 + i)
+                      );
+                      return (
+                        <button
+                          key={pageNum}
+                          onClick={() => setUserCurrentPage(pageNum)}
+                          className={`px-3 py-1 border rounded text-sm ${
+                            userCurrentPage === pageNum
+                              ? "bg-blue-600 text-white border-blue-600"
+                              : "border-gray-300 hover:bg-gray-50"
+                          }`}
+                        >
+                          {pageNum}
+                        </button>
+                      );
+                    })}
+                    <button
+                      onClick={() =>
+                        setUserCurrentPage(
+                          Math.min(userTotalPages, userCurrentPage + 1)
+                        )
+                      }
+                      disabled={userCurrentPage === userTotalPages}
+                      className="px-3 py-1 border border-gray-300 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                    >
+                      Next
+                    </button>
+                  </div>
+                </div>
+
+                {/* Bulk Actions */}
+                {selectedUsers.length > 0 && (
+                  <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-white border border-gray-300 rounded-lg shadow-lg p-4">
+                    <div className="flex items-center space-x-4">
+                      <span className="text-sm text-gray-700">
+                        {selectedUsers.length} user
+                        {selectedUsers.length > 1 ? "s" : ""} selected
+                      </span>
+                      <div className="flex space-x-2">
+                        <button
+                          onClick={() =>
+                            alert(
+                              "Bulk activate functionality will be implemented"
+                            )
+                          }
+                          className="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700"
+                        >
+                          Activate
+                        </button>
+                        <button
+                          onClick={() =>
+                            alert(
+                              "Bulk deactivate functionality will be implemented"
+                            )
+                          }
+                          className="px-3 py-1 bg-yellow-600 text-white text-sm rounded hover:bg-yellow-700"
+                        >
+                          Deactivate
+                        </button>
+                        <button
+                          onClick={() =>
+                            alert(
+                              "Bulk delete functionality will be implemented"
+                            )
+                          }
+                          className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700"
+                        >
+                          Delete Selected
+                        </button>
+                        <button
+                          onClick={() => setSelectedUsers([])}
+                          className="px-3 py-1 bg-gray-200 text-gray-700 text-sm rounded hover:bg-gray-300"
+                        >
+                          Clear Selection
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Additional Statistics */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="bg-white rounded-lg shadow p-6">
+                  <h4 className="text-lg font-medium text-gray-900 mb-4">
+                    Recent User Activity
+                  </h4>
+                  <div className="space-y-4">
+                    {filteredUsers.slice(0, 5).map((user) => (
+                      <div
+                        key={user._id}
+                        className="flex items-center space-x-3"
+                      >
+                        <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                          <span className="text-white font-medium text-xs">
+                            {(
+                              user.firstName?.[0] ||
+                              user.username?.[0] ||
+                              user.email?.[0] ||
+                              "?"
+                            ).toUpperCase()}
+                          </span>
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-sm font-medium text-gray-900">
+                            {user.firstName && user.lastName
+                              ? `${user.firstName} ${user.lastName}`
+                              : user.username || user.email}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            Joined{" "}
+                            {new Date(user.createdAt).toLocaleDateString()} •{" "}
+                            {user.role || "user"}
+                          </p>
+                        </div>
+                        <span
+                          className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                            user.isActive !== false
+                              ? "bg-green-100 text-green-800"
+                              : "bg-gray-100 text-gray-800"
+                          }`}
+                        >
+                          {user.isActive !== false ? "Active" : "Inactive"}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-lg shadow p-6">
+                  <h4 className="text-lg font-medium text-gray-900 mb-4">
+                    User Role Distribution
+                  </h4>
+                  <div className="space-y-3">
+                    {["admin", "moderator", "user"].map((role) => {
+                      const count = filteredUsers.filter(
+                        (user) => (user.role || "user") === role
+                      ).length;
+                      const percentage =
+                        filteredUsers.length > 0
+                          ? (count / filteredUsers.length) * 100
+                          : 0;
+                      return (
+                        <div
+                          key={role}
+                          className="flex items-center justify-between"
+                        >
+                          <span className="text-sm font-medium text-gray-700 capitalize">
+                            {role}s
+                          </span>
+                          <div className="flex items-center space-x-2">
+                            <div className="w-20 bg-gray-200 rounded-full h-2">
+                              <div
+                                className={`h-2 rounded-full ${
+                                  role === "admin"
+                                    ? "bg-red-600"
+                                    : role === "moderator"
+                                    ? "bg-yellow-600"
+                                    : "bg-green-600"
+                                }`}
+                                style={{ width: `${percentage}%` }}
+                              ></div>
+                            </div>
+                            <span className="text-sm text-gray-500">
+                              {count}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
             </div>
           )}
         </main>

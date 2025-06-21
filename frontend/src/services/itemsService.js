@@ -19,6 +19,20 @@ export const getItems = async (params = {}) => {
 };
 
 /**
+ * Get items for the current user
+ * @returns {Promise<Array>} - Array of user's item objects
+ */
+export const getUserItems = async () => {
+  try {
+    const response = await apiClient.get("/items/my-items");
+    return response;
+  } catch (error) {
+    console.error("Failed to fetch user items:", error);
+    throw error;
+  }
+};
+
+/**
  * Get a single item by ID
  * @param {String} id - Item ID
  * @returns {Promise<Object>} - Item object

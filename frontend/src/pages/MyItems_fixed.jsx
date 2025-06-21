@@ -345,25 +345,8 @@ const MyItems = () => {
                       No items found
                     </h3>
                     <p className="mt-1 text-sm text-gray-500">
-                      You haven't reported any items yet. Start by reporting a
-                      missing item or submitting a found item.
+                      You haven't reported any items yet.
                     </p>
-                    <div className="mt-6 flex gap-4 justify-center">
-                      <Link
-                        to="/report-missing"
-                        className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700"
-                      >
-                        <BellIcon className="h-4 w-4 mr-2" />
-                        Report Missing Item
-                      </Link>
-                      <Link
-                        to="/submit-found"
-                        className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700"
-                      >
-                        <MapPinIcon className="h-4 w-4 mr-2" />
-                        Submit Found Item
-                      </Link>
-                    </div>
                   </div>
                 )}
               </div>

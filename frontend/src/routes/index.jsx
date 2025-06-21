@@ -2,6 +2,7 @@ import React, { Suspense } from "react";
 import SignUp from "../pages/SignUp";
 import HomePage from "../pages/HomePage";
 import Dashboard from "../pages/Dashboard";
+import Profile from "../pages/Profile";
 import NotFound from "../pages/NotFound";
 import LinkTest from "../pages/LinkTest";
 import LogoutPage from "../pages/LogoutPage";
@@ -69,6 +70,14 @@ const routes = [
     element: (
       <ProtectedRoute>
         <MyItems />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/profile",
+    element: (
+      <ProtectedRoute>
+        <Profile />
       </ProtectedRoute>
     ),
   },

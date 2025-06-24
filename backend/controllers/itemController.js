@@ -84,6 +84,29 @@ exports.getItems = async (req, res, next) => {
   }
 };
 
+// @desc    Get user's items
+// @route   GET /api/items/my-items
+// @access  Private
+exports.getUserItems = async (req, res, next) => {
+  try {
+    // Find items created by the current user
+    const items = await Item.find({ user: req.user.id })
+      .populate({
+        path: "user",
+        select: "username email",
+      })
+      .sort("-createdAt");
+
+    res.status(200).json({
+      success: true,
+      count: items.length,
+      data: items,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // @desc    Get single item
 // @route   GET /api/items/:id
 // @access  Public

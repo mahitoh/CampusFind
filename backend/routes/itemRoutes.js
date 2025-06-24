@@ -2,6 +2,7 @@ const express = require("express");
 const {
   getItems,
   getItem,
+  getUserItems,
   createItem,
   updateItem,
   deleteItem,
@@ -16,6 +17,8 @@ router
   .route("/")
   .get(getItems)
   .post(protect, upload.array("images", 5), createItem);
+
+router.route("/my-items").get(protect, getUserItems);
 
 router
   .route("/:id")

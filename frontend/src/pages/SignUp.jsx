@@ -53,9 +53,13 @@ const SignUp = ({ isLoginMode = false }) => {
         password: loginForm.password,
       });
       if (result.success) {
-        // Redirect to dashboard on successful login
+        // Redirect based on user role
         console.log("Login successful!");
-        navigate("/dashboard");
+        if (result.data && result.data.role === "admin") {
+          navigate("/admin");
+        } else {
+          navigate("/dashboard");
+        }
       } else {
         alert("Login failed: " + (result.error || "Unknown error"));
       }

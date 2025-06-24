@@ -2,6 +2,8 @@ import React, { Suspense } from "react";
 import SignUp from "../pages/SignUp";
 import HomePage from "../pages/HomePage";
 import Dashboard from "../pages/Dashboard";
+import AdminDashboard from "../pages/AdminDashboard";
+import Profile from "../pages/Profile";
 import NotFound from "../pages/NotFound";
 import LinkTest from "../pages/LinkTest";
 import LogoutPage from "../pages/LogoutPage";
@@ -9,7 +11,11 @@ import LostItems from "../pages/LostItems";
 import ReportMissing from "../pages/ReportMissing";
 import SubmitFound from "../pages/SubmitFound";
 import MyItems from "../pages/MyItems";
-import { ProtectedRoute, PublicRoute } from "../components/layout/RouteGuards";
+import {
+  ProtectedRoute,
+  PublicRoute,
+  AdminRoute,
+} from "../components/layout/RouteGuards";
 
 /**
  * Routes configuration
@@ -34,6 +40,14 @@ const routes = [
       <ProtectedRoute>
         <Dashboard />
       </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/admin",
+    element: (
+      <AdminRoute>
+        <AdminDashboard />
+      </AdminRoute>
     ),
   },
   {
@@ -69,6 +83,14 @@ const routes = [
     element: (
       <ProtectedRoute>
         <MyItems />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/profile",
+    element: (
+      <ProtectedRoute>
+        <Profile />
       </ProtectedRoute>
     ),
   },

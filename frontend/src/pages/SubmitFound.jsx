@@ -202,7 +202,7 @@ const SubmitFound = () => {
   return (
     <div className="flex min-h-screen bg-gray-100">
       {/* Left Sidebar Navigation */}
-      <div className="w-64 bg-white border-r border-gray-200 flex flex-col h-screen">
+      <div className="fixed w-64 bg-white border-r border-gray-200 flex flex-col h-screen">
         <div className="flex items-center p-4 border-b">
           <Link to="/">
             <span className="text-lg font-semibold">Dashboard</span>
@@ -227,36 +227,39 @@ const SubmitFound = () => {
             );
           })}
         </nav>
-      </div>
-
+      </div>{" "}
       {/* Main Content Area */}
-      <div className="flex-1 overflow-auto">
-        <div className="max-w-4xl mx-auto p-6">
-          <div className="mb-6">
-            <h2 className="text-2xl font-semibold text-gray-700">
+      <div className="flex-1 overflow-auto ml-64">
+        <div className="max-w-2xl mx-auto p-6">
+          {/* Compact Header */}
+          <div className="text-center mb-6">
+            <h2 className="text-2xl font-bold text-gray-800">
               Submit Found Item
             </h2>
-            <p className="text-gray-500 mt-1">
-              Thank you for helping return lost items to their owners. Please
-              provide details about the item you found.
+            <p className="text-gray-600 mt-2">
+              Help return lost items to their owners
             </p>
           </div>
 
-          <div className="bg-black text-white rounded-lg shadow-lg overflow-hidden">
-            <div className="p-6">
-              <h3 className="text-xl font-semibold mb-4">Found Item Details</h3>
-              <p className="text-gray-400 mb-6">
-                Please provide all relevant information about the item you
-                found.
+          {/* Medium-sized Form Card */}
+          <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+            <div className="bg-gradient-to-r from-green-600 to-emerald-600 px-6 py-4">
+              <h3 className="text-lg font-semibold text-white">
+                Found Item Details
+              </h3>
+              <p className="text-green-100 text-sm">
+                Provide all relevant information about the item
               </p>
-
-              <form onSubmit={handleSubmit}>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            </div>
+            <div className="p-6">
+              `{" "}
+              <form onSubmit={handleSubmit} className="space-y-5">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Item Name */}
                   <div>
                     <label
                       htmlFor="name"
-                      className="block text-sm font-medium mb-2"
+                      className="block text-sm font-medium text-gray-700 mb-1"
                     >
                       Item Name
                     </label>
@@ -267,9 +270,9 @@ const SubmitFound = () => {
                       value={formData.name}
                       onChange={handleChange}
                       placeholder="e.g. Silver Watch"
-                      className={`w-full bg-gray-900 border ${
-                        formErrors.name ? "border-red-500" : "border-gray-700"
-                      } rounded-md p-3 text-white placeholder-gray-500`}
+                      className={`w-full border ${
+                        formErrors.name ? "border-red-500" : "border-gray-300"
+                      } rounded-lg px-3 py-2 text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-green-500 focus:border-green-500`}
                     />
                     {formErrors.name && (
                       <p className="mt-1 text-sm text-red-500">
@@ -282,7 +285,7 @@ const SubmitFound = () => {
                   <div>
                     <label
                       htmlFor="category"
-                      className="block text-sm font-medium mb-2"
+                      className="block text-sm font-medium text-gray-700 mb-1"
                     >
                       Category
                     </label>
@@ -292,11 +295,11 @@ const SubmitFound = () => {
                         name="category"
                         value={formData.category}
                         onChange={handleChange}
-                        className={`w-full bg-gray-900 border ${
+                        className={`w-full border ${
                           formErrors.category
                             ? "border-red-500"
-                            : "border-gray-700"
-                        } rounded-md p-3 text-white appearance-none`}
+                            : "border-gray-300"
+                        } rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-green-500 focus:border-green-500 appearance-none`}
                       >
                         <option value="">Select a category</option>
                         {categories.map((category) => (
@@ -320,21 +323,20 @@ const SubmitFound = () => {
                           />
                         </svg>
                       </div>
-                      {formErrors.category && (
-                        <p className="mt-1 text-sm text-red-500">
-                          {formErrors.category}
-                        </p>
-                      )}
                     </div>
+                    {formErrors.category && (
+                      <p className="mt-1 text-sm text-red-500">
+                        {formErrors.category}
+                      </p>
+                    )}
                   </div>
                 </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Date Found */}
                   <div>
                     <label
                       htmlFor="date"
-                      className="block text-sm font-medium mb-2"
+                      className="block text-sm font-medium text-gray-700 mb-1"
                     >
                       Date Found
                     </label>
@@ -344,9 +346,9 @@ const SubmitFound = () => {
                       name="date"
                       value={formData.date}
                       onChange={handleChange}
-                      className={`w-full bg-gray-900 border ${
-                        formErrors.date ? "border-red-500" : "border-gray-700"
-                      } rounded-md p-3 text-white`}
+                      className={`w-full border ${
+                        formErrors.date ? "border-red-500" : "border-gray-300"
+                      } rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-green-500 focus:border-green-500`}
                     />
                     {formErrors.date && (
                       <p className="mt-1 text-sm text-red-500">
@@ -359,7 +361,7 @@ const SubmitFound = () => {
                   <div>
                     <label
                       htmlFor="location"
-                      className="block text-sm font-medium mb-2"
+                      className="block text-sm font-medium text-gray-700 mb-1"
                     >
                       Location Found
                     </label>
@@ -370,11 +372,11 @@ const SubmitFound = () => {
                       value={formData.location}
                       onChange={handleChange}
                       placeholder="e.g. Cafeteria, Table 12"
-                      className={`w-full bg-gray-900 border ${
+                      className={`w-full border ${
                         formErrors.location
                           ? "border-red-500"
-                          : "border-gray-700"
-                      } rounded-md p-3 text-white placeholder-gray-500`}
+                          : "border-gray-300"
+                      } rounded-lg px-3 py-2 text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-green-500 focus:border-green-500`}
                     />
                     {formErrors.location && (
                       <p className="mt-1 text-sm text-red-500">
@@ -382,28 +384,27 @@ const SubmitFound = () => {
                       </p>
                     )}
                   </div>
-                </div>
-
+                </div>{" "}
                 {/* Description */}
-                <div className="mb-6">
+                <div>
                   <label
                     htmlFor="description"
-                    className="block text-sm font-medium mb-2"
+                    className="block text-sm font-medium text-gray-700 mb-1"
                   >
                     Item Description
                   </label>
                   <textarea
                     id="description"
                     name="description"
-                    rows={4}
+                    rows={3}
                     value={formData.description}
                     onChange={handleChange}
-                    placeholder="Provide a detailed description (color, brand, distinctive features, visible content, etc.)"
-                    className={`w-full bg-gray-900 border ${
+                    placeholder="Provide a detailed description (color, brand, distinctive features, etc.)"
+                    className={`w-full border ${
                       formErrors.description
                         ? "border-red-500"
-                        : "border-gray-700"
-                    } rounded-md p-3 text-white placeholder-gray-500`}
+                        : "border-gray-300"
+                    } rounded-lg px-3 py-2 text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-green-500 focus:border-green-500 resize-none`}
                   />
                   {formErrors.description && (
                     <p className="mt-1 text-sm text-red-500">
@@ -411,10 +412,9 @@ const SubmitFound = () => {
                     </p>
                   )}
                 </div>
-
                 {/* Image Upload */}
-                <div className="mb-6">
-                  <label className="block text-sm font-medium mb-2">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
                     Upload Image (Optional)
                   </label>
                   <div
@@ -425,12 +425,12 @@ const SubmitFound = () => {
                       formErrors.image
                         ? "border-red-500"
                         : isDragging
-                        ? "border-white bg-white/10"
-                        : "border-gray-700 hover:border-white hover:bg-white/5"
-                    } rounded-md transition-all duration-200 group cursor-pointer h-[200px] flex items-center justify-center`}
+                        ? "border-green-500 bg-green-50"
+                        : "border-gray-300 hover:border-green-400 hover:bg-gray-50"
+                    } rounded-lg transition-all duration-200 group cursor-pointer h-[150px] flex items-center justify-center`}
                   >
                     <div
-                      className={`p-6 w-full ${previewImage ? "h-full" : ""}`}
+                      className={`p-4 w-full ${previewImage ? "h-full" : ""}`}
                     >
                       {previewImage ? (
                         <div className="relative h-full flex items-center justify-center">
@@ -442,7 +442,7 @@ const SubmitFound = () => {
                           <button
                             type="button"
                             onClick={handleClearImage}
-                            className="absolute top-2 right-2 bg-black/50 hover:bg-black/70 rounded-full p-1.5 text-white transition-colors"
+                            className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 rounded-full p-1.5 text-white transition-colors"
                           >
                             <svg
                               className="h-4 w-4"
@@ -461,12 +461,12 @@ const SubmitFound = () => {
                         </div>
                       ) : (
                         <div className="text-center relative">
-                          <ArrowUpTrayIcon className="h-12 w-12 text-gray-500 mx-auto mb-3 group-hover:text-white transition-colors" />
-                          <p className="text-gray-400 group-hover:text-white transition-colors">
+                          <ArrowUpTrayIcon className="h-10 w-10 text-gray-400 mx-auto mb-2 group-hover:text-green-500 transition-colors" />
+                          <p className="text-gray-600 group-hover:text-green-600 transition-colors text-sm">
                             <span className="font-medium">Click to upload</span>{" "}
                             or drag and drop
                           </p>
-                          <p className="text-gray-500 text-sm mt-2 group-hover:text-gray-300 transition-colors">
+                          <p className="text-gray-500 text-xs mt-1 group-hover:text-gray-600 transition-colors">
                             PNG, JPG up to 5MB
                           </p>
                           <input
@@ -485,15 +485,14 @@ const SubmitFound = () => {
                       {formErrors.image}
                     </p>
                   )}
-                </div>
-
+                </div>{" "}
                 {/* Turn-in Method */}
-                <div className="mb-6">
-                  <label className="block text-sm font-medium mb-2">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     How would you like to turn in this item?
                   </label>
-                  <div className="space-y-3">
-                    <div className="flex items-center">
+                  <div className="space-y-2">
+                    <div className="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
                       <input
                         id="office"
                         type="radio"
@@ -501,16 +500,16 @@ const SubmitFound = () => {
                         value="office"
                         checked={formData.turnInMethod === "office"}
                         onChange={handleChange}
-                        className="h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500"
+                        className="h-4 w-4 border-gray-300 text-green-600 focus:ring-green-500"
                       />
                       <label
                         htmlFor="office"
-                        className="ml-2 block text-sm text-gray-300"
+                        className="ml-3 block text-sm text-gray-700 cursor-pointer"
                       >
                         I will drop it off at the campus lost and found office
                       </label>
                     </div>
-                    <div className="flex items-center">
+                    <div className="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
                       <input
                         id="keep"
                         type="radio"
@@ -518,11 +517,11 @@ const SubmitFound = () => {
                         value="keep"
                         checked={formData.turnInMethod === "keep"}
                         onChange={handleChange}
-                        className="h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500"
+                        className="h-4 w-4 border-gray-300 text-green-600 focus:ring-green-500"
                       />
                       <label
                         htmlFor="keep"
-                        className="ml-2 block text-sm text-gray-300"
+                        className="ml-3 block text-sm text-gray-700 cursor-pointer"
                       >
                         I'm holding onto it until the owner is found
                       </label>
@@ -534,13 +533,12 @@ const SubmitFound = () => {
                     </p>
                   )}
                 </div>
-
                 {/* Submit Button */}
-                <div className="flex justify-end">
+                <div className="flex justify-center pt-2">
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className={`px-6 py-3 bg-white text-black rounded-md hover:bg-gray-200 transition ${
+                    className={`px-8 py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-medium rounded-lg transition-all duration-200 shadow-md hover:shadow-lg ${
                       isSubmitting ? "opacity-50 cursor-not-allowed" : ""
                     }`}
                   >

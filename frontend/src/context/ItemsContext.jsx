@@ -1,4 +1,10 @@
-import React, { createContext, useState, useContext, useEffect } from "react";
+import React, {
+  createContext,
+  useState,
+  useContext,
+  useEffect,
+  useCallback,
+} from "react";
 import * as itemsService from "../services/itemsService";
 import { formatImageUrl } from "../services/apiClient";
 
@@ -11,7 +17,9 @@ export const useItems = () => useContext(ItemsContext);
 // Provider component that wraps your app and makes items available to any child component
 export const ItemsProvider = ({ children }) => {
   const [items, setItems] = useState([]);
+  const [userItems, setUserItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [userItemsLoading, setUserItemsLoading] = useState(true);
   const [error, setError] = useState(null);
 
   // Initial items data - for fallback if API fails
@@ -131,11 +139,51 @@ export const ItemsProvider = ({ children }) => {
     };
 
     fetchItems();
-
     return () => {
       isMounted = false;
     };
-  }, []); // Remove initialItems from dependency array
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Empty dependency array is fine since initialItems is static  // Function to fetch user-specific items
+  const fetchUserItems = useCallback(async () => {
+    try {
+      setUserItemsLoading(true);
+      const response = await itemsService.getUserItems();
+
+      if (response && response.data && Array.isArray(response.data)) {
+        // Format the user items similar to general items
+        const formattedUserItems = response.data.map((item) => ({
+          ...item,
+          id: item._id || item.id,
+          name: item.title || item.name,
+          date: new Date(item.date || item.createdAt).toLocaleDateString(
+            "en-US",
+            {
+              month: "short",
+              day: "numeric",
+              year: "numeric",
+            }
+          ),
+          status: item.status || "Missing",
+          image:
+            item.images && item.images.length > 0
+              ? formatImageUrl(item.images[0])
+              : null,
+          images: (item.images || []).map((img) => formatImageUrl(img)),
+        }));
+
+        setUserItems(formattedUserItems);
+      } else {
+        setUserItems([]);
+      }
+    } catch (err) {
+      console.error("Error fetching user items:", err);
+      setUserItems([]);
+      setError("Could not load your items");
+    } finally {
+      setUserItemsLoading(false);
+    }
+  }, []); // Empty dependency array since it doesn't depend on any props/state
+
   // Using the formatImageUrl function from apiClient.js
   // Function to add a new lost item
   const addLostItem = async (newItem) => {
@@ -294,9 +342,7 @@ export const ItemsProvider = ({ children }) => {
           images: (response.data.images || []).map((img) =>
             formatImageUrl(img)
           ),
-        };
-
-        // Add to our local state cache
+        }; // Add to our local state cache
         setItems((prevItems) => {
           // Only add if not already in the list
           if (!prevItems.find((item) => item.id === formattedItem.id)) {
@@ -314,15 +360,17 @@ export const ItemsProvider = ({ children }) => {
       return null;
     }
   };
-
   // Context value with items and functions
   const value = {
     items,
+    userItems,
     loading,
+    userItemsLoading,
     error,
     addLostItem,
     addFoundItem,
     getItemById,
+    fetchUserItems,
   };
 
   return (

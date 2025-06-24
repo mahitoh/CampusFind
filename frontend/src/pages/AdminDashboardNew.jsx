@@ -31,10 +31,10 @@ ChartJS.register(ArcElement, Tooltip, Legend);
 const AdminDashboard = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
-
   // Main state
   const [activeTab, setActiveTab] = useState("dashboard");
   const [loading, setLoading] = useState(true);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [stats, setStats] = useState({
     totalItems: 0,
     pendingApproval: 0,
@@ -484,25 +484,34 @@ const AdminDashboard = () => {
       }\nJoined: ${new Date(user.createdAt).toLocaleDateString()}`
     );
   };
-
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-900">
+      {/* Fixed Header */}
+      <AdminHeader
+        user={user}
+        handleLogout={handleLogout}
+        mobileMenuOpen={mobileMenuOpen}
+        setMobileMenuOpen={setMobileMenuOpen}
+      />
+
+      {/* Main layout */}
       <div className="flex">
         {/* Sidebar */}
         <AdminSidebar
           activeTab={activeTab}
           setActiveTab={setActiveTab}
           stats={stats}
-        />
-
+          mobileMenuOpen={mobileMenuOpen}
+          setMobileMenuOpen={setMobileMenuOpen}
+        />{" "}
         {/* Main content */}
-        <div className="md:pl-64 flex flex-col flex-1">
-          {/* Header */}
-          <AdminHeader user={user} handleLogout={handleLogout} />
+        <div className="md:pl-64 flex flex-col flex-1 min-h-screen">
+          {/* Spacer for fixed navbar */}
+          <div className="h-24 bg-gray-900"></div>
 
           {/* Main content area */}
-          <main className="flex-1">
-            <div className="py-6">
+          <main className="flex-1 overflow-y-auto bg-gray-900">
+            <div className="py-8 min-h-full">
               <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
                 {activeTab === "dashboard" && (
                   <DashboardHome

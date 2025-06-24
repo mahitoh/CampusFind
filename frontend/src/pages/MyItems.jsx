@@ -18,13 +18,13 @@ const MyItems = () => {
   const { user } = useAuth();
   const { items, userItems, fetchUserItems, userItemsLoading } = useItems();
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
-
   // Simple effect that runs only when user changes and hasn't loaded yet
   useEffect(() => {
     if (user?.id && fetchUserItems && !hasLoadedOnce) {
       fetchUserItems();
       setHasLoadedOnce(true);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id, hasLoadedOnce]); // Only user ID and load flag as dependencies
 
   // Filter items for current user if userItems is not available
@@ -36,9 +36,7 @@ const MyItems = () => {
             item.reportedBy === user?.id ||
             item.userId === user?.id ||
             item.user === user?.id
-        );
-
-  // Navigation items for sidebar
+        ); // Navigation items for sidebar
   const navigation = [
     { name: "Dashboard", href: "/dashboard", icon: HomeIcon },
     { name: "Lost Items", href: "/lost-items", icon: MagnifyingGlassIcon },

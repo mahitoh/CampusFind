@@ -83,24 +83,24 @@ const NavBar = () => {
                 </a>
               </li>
               <li>
-                <a
-                  href=""
+                <Link
+                  to="/about"
                   className={`${
                     isScrolled ? "text-gray-800" : "text-white"
                   } font-medium hover:text-accent transition-colors`}
                 >
                   About Us
-                </a>
+                </Link>
               </li>
               <li>
-                <a
-                  href=""
+                <Link
+                  to="/contact"
                   className={`${
                     isScrolled ? "text-gray-800" : "text-white"
                   } font-medium hover:text-accent transition-colors`}
                 >
                   Contact
-                </a>
+                </Link>
               </li>
             </ul>
           </nav>{" "}
@@ -154,20 +154,20 @@ const NavBar = () => {
                     </a>
                   </li>
                   <li>
-                    <a
-                      href=""
+                    <Link
+                      to="/about"
                       className="block py-2 text-gray-800 font-medium hover:text-accent transition-colors"
                     >
                       About Us
-                    </a>
+                    </Link>
                   </li>
                   <li>
-                    <a
-                      href=""
+                    <Link
+                      to="/contact"
                       className="block py-2 text-gray-800 font-medium hover:text-accent transition-colors"
                     >
                       Contact
-                    </a>
+                    </Link>
                   </li>
                 </ul>
               </nav>

@@ -7,28 +7,32 @@ const FeaturedItems = () => {
       id: 1,
       title: "Blue Backpack",
       description: "Found near the Science Building on May 10th",
-      image: "/src/assets/images/download.jpg", // Update with actual image paths
+      image:
+        "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=300&h=200&fit=crop&crop=center", // Blue backpack
       category: "Found",
     },
     {
       id: 2,
-      title: "Student ID Card",
+      title: "Laptop",
       description: "Lost at the Student Center on May 8th",
-      image: "/src/assets/images/download1.jpg", // Update with actual image paths
+      image:
+        "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=300&h=200&fit=crop&crop=center", // Laptop
       category: "Lost",
     },
     {
       id: 3,
       title: "Apple AirPods",
       description: "Found in the Library, 3rd floor",
-      image: "/src/assets/images/images.jpg", // Update with actual image paths
+      image:
+        "https://images.unsplash.com/photo-1606220945770-b5b6c2c55bf1?w=300&h=200&fit=crop&crop=center", // AirPods
       category: "Found",
     },
     {
       id: 4,
       title: "Water Bottle",
       description: "Lost at the Gym on May 11th",
-      image: "/src/assets/images/bg.jpg", // Update with actual image paths
+      image:
+        "https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=300&h=200&fit=crop&crop=center", // Water bottle
       category: "Lost",
     },
   ];

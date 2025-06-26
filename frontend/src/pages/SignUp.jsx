@@ -131,25 +131,25 @@ const SignUp = ({ isLoginMode = false }) => {
     }
   };
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-[#098dc1] via-[#098dc1] to-[#f417de]">
+    <div className="flex items-center justify-center min-h-screen bg-gray-50">
       {/* Back button - positioned absolutely at the top-left corner */}
       <button
         onClick={() => navigate("/")}
-        className="absolute top-6 left-6 bg-white bg-opacity-90 hover:bg-opacity-100 text-gray-800 hover:text-blue-700 p-3 rounded-full transition-all duration-300 shadow-md flex items-center gap-1 hover:gap-2"
+        className="absolute top-6 left-6 bg-white hover:bg-gray-100 text-gray-800 hover:text-blue-700 p-3 rounded-full transition-all duration-300 shadow-md flex items-center gap-1 hover:gap-2"
         aria-label="Back to Home"
         title="Back to Home"
       >
         <FaArrowLeft className="text-xl" />
         <span className="text-sm font-medium hidden sm:inline">Home</span>
       </button>
-      <div className="relative w-[410px] h-[650px] bg-gray-100 rounded-2xl flex items-center justify-center overflow-hidden">
+      <div className="relative w-[350px] h-[500px] bg-white rounded-lg shadow-lg flex items-center justify-center overflow-hidden">
         {/* Login Form */}
         <div
-          className={`absolute w-full px-8 transition-transform duration-500 ${
+          className={`absolute w-full px-6 transition-transform duration-500 ${
             isRegister ? "-translate-x-full" : "translate-x-0"
           }`}
         >
-          <h2 className="text-2xl font-bold text-gray-800 mb-6">Login</h2>{" "}
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">Login</h2>{" "}
           <form onSubmit={handleLoginSubmit}>
             <FormInput
               icon={FaUser}
@@ -159,7 +159,7 @@ const SignUp = ({ isLoginMode = false }) => {
               onChange={handleLoginChange}
               placeholder="Enter Your Username*"
               required={true}
-              className="mb-10 border-b-2 border-gray-400"
+              className="mb-6 border-b-2 border-gray-400"
             />
             <FormInput
               icon={FaLock}
@@ -191,11 +191,11 @@ const SignUp = ({ isLoginMode = false }) => {
 
         {/* Register Form */}
         <div
-          className={`absolute w-full px-8 transition-transform duration-500 ${
+          className={`absolute w-full px-6 transition-transform duration-500 ${
             isRegister ? "translate-x-0" : "translate-x-full"
           }`}
         >
-          <h2 className="text-2xl font-bold text-gray-800 mb-6">Register</h2>
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">Register</h2>
           <form onSubmit={handleRegisterSubmit}>
             <FormInput
               icon={FaUser}
@@ -205,7 +205,7 @@ const SignUp = ({ isLoginMode = false }) => {
               onChange={handleRegisterChange}
               placeholder="Enter Your Username*"
               required={true}
-              className="mb-6 border-b-2 border-gray-400"
+              className="mb-4 border-b-2 border-gray-400"
             />
             <FormInput
               icon={FaEnvelope}
@@ -215,7 +215,7 @@ const SignUp = ({ isLoginMode = false }) => {
               onChange={handleRegisterChange}
               placeholder="Enter Your Email*"
               required={true}
-              className="mb-6 border-b-2 border-gray-400"
+              className="mb-4 border-b-2 border-gray-400"
             />
             <FormInput
               icon={FaLock}

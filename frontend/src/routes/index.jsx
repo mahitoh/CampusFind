@@ -11,6 +11,8 @@ import LostItems from "../pages/LostItems";
 import ReportMissing from "../pages/ReportMissing";
 import SubmitFound from "../pages/SubmitFound";
 import MyItems from "../pages/MyItems";
+import AboutUs from "../pages/AboutUs";
+import Contact from "../pages/Contact";
 import {
   ProtectedRoute,
   PublicRoute,
@@ -25,6 +27,14 @@ const routes = [
   {
     path: "/",
     element: <HomePage />,
+  },
+  {
+    path: "/about",
+    element: <AboutUs />,
+  },
+  {
+    path: "/contact",
+    element: <Contact />,
   },
   {
     path: "/signup",

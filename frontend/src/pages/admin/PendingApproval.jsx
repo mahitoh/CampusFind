@@ -1,5 +1,6 @@
 import React from "react";
 import { CheckIcon, XMarkIcon, EyeIcon } from "@heroicons/react/24/outline";
+import { formatImageUrl } from "../../services/apiClient";
 
 const PendingApproval = ({
   pendingItems,
@@ -233,9 +234,7 @@ const PendingApproval = ({
                                 .map((image, index) => (
                                   <img
                                     key={index}
-                                    src={`${
-                                      import.meta.env.VITE_API_URL
-                                    }/uploads/${image}`}
+                                    src={formatImageUrl(image)}
                                     alt={`${item.name} ${index + 1}`}
                                     className="h-16 w-16 rounded-lg object-cover border"
                                     onError={(e) => {

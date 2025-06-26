@@ -142,3 +142,84 @@ export const deleteUser = async (userId) => {
     };
   }
 };
+
+/**
+ * Get pending items awaiting approval (admin only)
+ * @returns {Promise<Object>} - Response with pending items list
+ */
+export const getPendingItems = async () => {
+  try {
+    const response = await apiClient.get("/items/admin/pending");
+    return {
+      success: true,
+      data: response.data || response,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error.response?.data?.error || error.message,
+    };
+  }
+};
+
+/**
+ * Get all items including pending and rejected (admin only)
+ * @returns {Promise<Object>} - Response with all items
+ */
+export const getAllItemsAdmin = async () => {
+  try {
+    const response = await apiClient.get("/items/admin/all");
+    return {
+      success: true,
+      data: response.data || response,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error.response?.data?.error || error.message,
+    };
+  }
+};
+
+/**
+ * Approve an item (admin only)
+ * @param {string} itemId - The ID of the item to approve
+ * @returns {Promise<Object>} - Response confirming approval
+ */
+export const approveItem = async (itemId) => {
+  try {
+    const response = await apiClient.put(`/items/admin/${itemId}/approve`);
+    return {
+      success: true,
+      data: response.data || response,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error.response?.data?.error || error.message,
+    };
+  }
+};
+
+/**
+ * Reject an item (admin only)
+ * @param {string} itemId - The ID of the item to reject
+ * @param {string} reason - Optional rejection reason
+ * @returns {Promise<Object>} - Response confirming rejection
+ */
+export const rejectItem = async (itemId, reason = "") => {
+  try {
+    const response = await apiClient.put(`/items/admin/${itemId}/reject`, {
+      reason,
+    });
+    return {
+      success: true,
+      data: response.data || response,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error.response?.data?.error || error.message,
+    };
+  }
+};

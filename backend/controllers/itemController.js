@@ -19,15 +19,22 @@ exports.getItems = async (req, res, next) => {
       (match) => `$${match}`
     );
 
+    // Parse the query and add approval filter for public access
+    const parsedQuery = JSON.parse(queryStr);
+    parsedQuery.approvalStatus = "Approved"; // Only show approved items to public
+
     // Finding resource
-    let query = Item.find(JSON.parse(queryStr)).populate({
+    let query = Item.find(parsedQuery).populate({
       path: "user",
       select: "username email",
     });
 
     // Search functionality
     if (req.query.search) {
-      query = Item.find({ $text: { $search: req.query.search } });
+      query = Item.find({
+        $text: { $search: req.query.search },
+        approvalStatus: "Approved", // Only search approved items
+      });
     }
 
     // Select Fields
@@ -233,6 +240,197 @@ exports.deleteItem = async (req, res, next) => {
     res.status(200).json({
       success: true,
       data: {},
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Get all pending items (Admin only)
+// @route   GET /api/items/admin/pending
+// @access  Private/Admin
+exports.getPendingItems = async (req, res, next) => {
+  try {
+    const items = await Item.find({ approvalStatus: "Pending" })
+      .populate({
+        path: "user",
+        select: "username email",
+      })
+      .sort("-createdAt");
+
+    res.status(200).json({
+      success: true,
+      count: items.length,
+      data: items,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Approve an item (Admin only)
+// @route   PUT /api/items/admin/:id/approve
+// @access  Private/Admin
+exports.approveItem = async (req, res, next) => {
+  try {
+    const item = await Item.findById(req.params.id);
+
+    if (!item) {
+      return res.status(404).json({
+        success: false,
+        error: "Item not found",
+      });
+    }
+
+    item.approvalStatus = "Approved";
+    item.approvedBy = req.user.id;
+    item.approvedAt = new Date();
+
+    await item.save();
+
+    res.status(200).json({
+      success: true,
+      data: item,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Reject an item (Admin only)
+// @route   PUT /api/items/admin/:id/reject
+// @access  Private/Admin
+exports.rejectItem = async (req, res, next) => {
+  try {
+    const { reason } = req.body;
+
+    const item = await Item.findById(req.params.id);
+
+    if (!item) {
+      return res.status(404).json({
+        success: false,
+        error: "Item not found",
+      });
+    }
+
+    item.approvalStatus = "Rejected";
+    item.approvedBy = req.user.id;
+    item.approvedAt = new Date();
+    if (reason) {
+      item.rejectionReason = reason;
+    }
+
+    await item.save();
+
+    res.status(200).json({
+      success: true,
+      data: item,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Get all pending items (Admin only)
+// @route   GET /api/items/admin/pending
+// @access  Private/Admin
+exports.getPendingItems = async (req, res, next) => {
+  try {
+    const items = await Item.find({ approvalStatus: "Pending" })
+      .populate({
+        path: "user",
+        select: "username email",
+      })
+      .sort("-createdAt");
+
+    res.status(200).json({
+      success: true,
+      count: items.length,
+      data: items,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Get all items including pending (Admin only)
+// @route   GET /api/items/admin/all
+// @access  Private/Admin
+exports.getAllItemsAdmin = async (req, res, next) => {
+  try {
+    // Copy req.query
+    const reqQuery = { ...req.query };
+
+    // Fields to exclude
+    const removeFields = ["select", "sort", "page", "limit", "search"];
+    removeFields.forEach((param) => delete reqQuery[param]);
+
+    // Create query string
+    let queryStr = JSON.stringify(reqQuery);
+    queryStr = queryStr.replace(
+      /\b(gt|gte|lt|lte|in)\b/g,
+      (match) => `$${match}`
+    );
+
+    // Finding resource (no approval filter for admin)
+    let query = Item.find(JSON.parse(queryStr)).populate({
+      path: "user",
+      select: "username email",
+    });
+
+    // Search functionality
+    if (req.query.search) {
+      query = Item.find({ $text: { $search: req.query.search } });
+    }
+
+    // Select Fields
+    if (req.query.select) {
+      const fields = req.query.select.split(",").join(" ");
+      query = query.select(fields);
+    }
+
+    // Sort
+    if (req.query.sort) {
+      const sortBy = req.query.sort.split(",").join(" ");
+      query = query.sort(sortBy);
+    } else {
+      query = query.sort("-createdAt");
+    }
+
+    // Pagination
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10;
+    const startIndex = (page - 1) * limit;
+    const endIndex = page * limit;
+    const total = await Item.countDocuments(JSON.parse(queryStr));
+
+    query = query.skip(startIndex).limit(limit);
+
+    // Executing query
+    const items = await query;
+
+    // Pagination result
+    const pagination = {};
+
+    if (endIndex < total) {
+      pagination.next = {
+        page: page + 1,
+        limit,
+      };
+    }
+
+    if (startIndex > 0) {
+      pagination.prev = {
+        page: page - 1,
+        limit,
+      };
+    }
+
+    res.status(200).json({
+      success: true,
+      count: items.length,
+      pagination,
+      data: items,
     });
   } catch (error) {
     next(error);

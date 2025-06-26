@@ -8,6 +8,7 @@ import bg4 from "./assets/images/images.jpg";
 import HomePageLayout from "./components/layout/HomePageLayout";
 import { AuthProvider } from "./context/AuthContextNew";
 import { ItemsProvider } from "./context/ItemsContext";
+import AuthConflictHandler from "./components/common/AuthConflictHandler";
 
 // Import routes configuration
 import routes from "./routes";
@@ -37,7 +38,9 @@ function App() {
   return (
     <AuthProvider>
       <ItemsProvider>
-        <AppRoutes />
+        <AuthConflictHandler>
+          <AppRoutes />
+        </AuthConflictHandler>
       </ItemsProvider>
     </AuthProvider>
   );

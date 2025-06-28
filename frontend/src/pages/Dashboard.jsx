@@ -227,7 +227,7 @@ const Dashboard = ({ activeTab = "dashboard" }) => {
               const Icon = stat.icon;
               let iconClass = "";
 
-              // Assign specific icon styles based on the card type
+              // Assign specific icon of styles based on the card type
               if (index === 0) iconClass = "text-white"; // My Reported Items
               else if (index === 1)
                 iconClass = "text-white"; // My Found Submissions

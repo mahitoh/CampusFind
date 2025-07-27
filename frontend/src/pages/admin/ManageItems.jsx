@@ -1,5 +1,6 @@
 import React from "react";
 import { EyeIcon } from "@heroicons/react/24/outline";
+import { formatImageUrl } from "../../services/apiClient";
 
 const ManageItems = ({
   // Data
@@ -383,9 +384,7 @@ const ManageItems = ({
                         {item.images && item.images.length > 0 ? (
                           <div className="flex-shrink-0">
                             <img
-                              src={`${import.meta.env.VITE_API_URL}/uploads/${
-                                item.images[0]
-                              }`}
+                              src={formatImageUrl(item.images[0])}
                               alt={item.title}
                               className="h-12 w-12 rounded-lg object-cover ring-2 ring-gray-200"
                               onError={(e) => {

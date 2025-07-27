@@ -29,6 +29,24 @@ const ItemSchema = new mongoose.Schema({
     enum: ["Lost", "Found", "Claimed", "Returned"],
     required: [true, "Status is required"],
   },
+  // Admin approval system
+  approvalStatus: {
+    type: String,
+    enum: ["Pending", "Approved", "Rejected"],
+    default: "Pending",
+    required: true,
+  },
+  approvedBy: {
+    type: mongoose.Schema.ObjectId,
+    ref: "User",
+  },
+  approvedAt: {
+    type: Date,
+  },
+  rejectionReason: {
+    type: String,
+    maxlength: [200, "Rejection reason cannot be more than 200 characters"],
+  },
   location: {
     type: String,
     required: [true, "Location where item was lost/found is required"],

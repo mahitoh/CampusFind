@@ -12,6 +12,7 @@ import {
   ManageItems,
   PendingApproval,
   ManageUsers,
+  Settings,
 } from "./admin";
 
 // Import helper functions
@@ -197,21 +198,23 @@ const AdminDashboard = () => {
 
   const handleApproveItem = async (itemId) => {
     try {
-      const item = pendingItems.find((p) => p.id === itemId);
-      if (item && item.originalItem) {
-        const result = await adminService.updateItemStatus(itemId, {
-          status: "Active",
-        });
+      const result = await adminService.approveItem(itemId);
 
-        if (result.success) {
-          setPendingItems(pendingItems.filter((item) => item.id !== itemId));
-          setStats((prev) => ({
-            ...prev,
-            pendingApproval: prev.pendingApproval - 1,
-          }));
-        } else {
-          alert("Failed to approve item: " + result.error);
-        }
+      if (result.success) {
+        // Remove from pending items
+        setPendingItems(pendingItems.filter((item) => item._id !== itemId));
+
+        // Update stats
+        setStats((prev) => ({
+          ...prev,
+          pendingApproval: Math.max(0, prev.pendingApproval - 1),
+          totalItems: prev.totalItems + 1,
+        }));
+
+        // TODO: Reload items to get updated data
+        // loadAdminData();
+      } else {
+        alert("Failed to approve item: " + result.error);
       }
     } catch (error) {
       console.error("Error approving item:", error);
@@ -219,16 +222,22 @@ const AdminDashboard = () => {
     }
   };
 
-  const handleRejectItem = async (itemId) => {
+  const handleRejectItem = async (itemId, reason = "") => {
     try {
-      const result = await adminService.deleteItem(itemId);
+      const result = await adminService.rejectItem(itemId, reason);
 
       if (result.success) {
-        setPendingItems(pendingItems.filter((item) => item.id !== itemId));
+        // Remove from pending items
+        setPendingItems(pendingItems.filter((item) => item._id !== itemId));
+
+        // Update stats
         setStats((prev) => ({
           ...prev,
-          pendingApproval: prev.pendingApproval - 1,
+          pendingApproval: Math.max(0, prev.pendingApproval - 1),
         }));
+
+        // TODO: Reload items to get updated data
+        // loadAdminData();
       } else {
         alert("Failed to reject item: " + result.error);
       }
@@ -501,7 +510,7 @@ const AdminDashboard = () => {
           <AdminHeader user={user} handleLogout={handleLogout} />
 
           {/* Main content area */}
-          <main className="flex-1">
+          <main className="flex-1 pt-20">
             <div className="py-6">
               <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
                 {activeTab === "dashboard" && (
@@ -602,6 +611,8 @@ const AdminDashboard = () => {
                     loading={loading}
                   />
                 )}
+
+                {activeTab === "settings" && <Settings />}
               </div>
             </div>
           </main>

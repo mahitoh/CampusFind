@@ -5,3 +5,4 @@ export { default as DashboardHome } from "./DashboardHome";
 export { default as ManageItems } from "./ManageItems";
 export { default as PendingApproval } from "./PendingApproval";
 export { default as ManageUsers } from "./ManageUsers";
+export { default as Settings } from "./Settings";
